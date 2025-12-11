@@ -529,8 +529,9 @@ class DeliveryRiskModel:
         model_path = Path(model_dir)
         model_path.mkdir(exist_ok=True)
 
-        # Save XGBoost model using booster directly to avoid sklearn wrapper issues
-        self.model.get_booster().save_model(str(model_path / 'delivery_risk_model.json'))
+        # Save XGBoost model using pickle to preserve sklearn wrapper
+        with open(model_path / 'delivery_risk_model.pkl', 'wb') as f:
+            pickle.dump(self.model, f)
 
         # Save statistics and feature columns
         artifacts = {
@@ -554,11 +555,9 @@ class DeliveryRiskModel:
         """
         model_path = Path(model_dir)
 
-        # Load XGBoost model using Booster and wrap in classifier
-        booster = xgb.Booster()
-        booster.load_model(str(model_path / 'delivery_risk_model.json'))
-        self.model = xgb.XGBClassifier()
-        self.model._Booster = booster
+        # Load XGBoost model from pickle
+        with open(model_path / 'delivery_risk_model.pkl', 'rb') as f:
+            self.model = pickle.load(f)
 
         # Load artifacts
         with open(model_path / 'model_artifacts.pkl', 'rb') as f:
