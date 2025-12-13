@@ -1,0 +1,18 @@
+# LangGraph and LangChain
+langgraph
+langgraph-cli
+langchain
+langchain-core
+langchain-openai
+langchain-anthropic
+langchain-community
+langsmith
+
+# Core dependencies
+python-dotenv
+pydantic
+pydantic-settings
+
+# API server (optional, for custom endpoints)
+fastapi
+uvicorn

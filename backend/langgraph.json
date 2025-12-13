@@ -1,0 +1,11 @@
+{
+  "$schema": "https://langchain-ai.github.io/langgraph/schemas/langgraph.schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "delivery": "./graph.py:delivery_graph"
+  },
+  "env": ".env",
+  "python_version": "3.11",
+  "pip_config_file": null,
+  "dockerfile_lines": []
+}
