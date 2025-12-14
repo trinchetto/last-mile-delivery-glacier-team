@@ -72,6 +72,10 @@ prompt_understanding: |
   **Output**:  
   Plot a pie chart with the number of unique values in load_id_pseudo for each unique "otd_designation".
  
+    ### Example 10  
+  **user_query**: Which carriers are the most reliable?
+  **Output**:  
+  Create a table of the top 3 carrier by the number of unique load_id_pseudo with otd_designation equal to "On-Time" or "Delivered Early"
 
   # Notes
 

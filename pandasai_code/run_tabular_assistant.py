@@ -30,7 +30,7 @@ cool_print("..... done!",color="bright_yellow")
 prompt_in=""
 while prompt_in!="END":
     prompt_in=input("Write a question to the data assistant > ")
-    if prompt_in!="END" or prompt_in!="":
+    if prompt_in!="END" and prompt_in!="":
         reply=my_tab_assistant.run(
             user_query=prompt_in
         )
