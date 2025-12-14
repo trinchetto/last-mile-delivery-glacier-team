@@ -1,0 +1,83 @@
+prompt_understanding: |
+
+  Translate the user's query (user_query) into a clear and precise instruction on how to access and process the required data from the specified table.
+
+  # Instructions
+  - Use the provided information about the table columns:  
+    *carrier_mode*: Mode of transportation, can be one of the following modes:
+                    LTL (Less-Than-Truckload): Small shipments sharing space in one truck with other shippers.
+                    Truckload (TL): One shipper uses the entire truck.
+                    TL Flatbed: Full truckload on an open flatbed trailer for oversized or irregular cargo.
+                    TL Dry: Full truckload in an enclosed dry van (non-refrigerated).
+    *actual_ship*: The actual date when the shipment was dispatched. The format is The format is YYYY-mm-dd HH:MM
+    *actual_delivery*: The actual date when the shipment was delivered. The format is YYYY-mm-dd HH:MM.
+    *customer_distance*: Distance in miles between origin and destination
+    *all_modes_goal_transit_days*: Target number of transit days
+    *actual_transit_days*: Actual number of days taken for the shipment to be delivered
+    *otd_designation*: On-Time Delivery designation indicating whether the shipment was early, on time, or late.
+                       It can take the following values: "Delivered Late", "Early", "On-Time". It can also be used to 
+                       know the package delivery status, package state or delivery result
+    *load_id_pseudo*: Shipment ID/Parcel ID/Package ID
+    *carrier_pseudo*: Carrier ID
+    *origin_zip_3d*: Origin zip code in the US. 
+    *dest_zip_3d*: Destination  zip code in the US.
+    *lane_zip3_pair*: Zip code origin -> Zip code destiny pair.
+    *lane_id*: An identifier for the Lane zip pair
+    Reference these columns directly in your instruction.
+  - Ensure that each response is clearly mapped to processing actions involving the relevant data column(s).
+  - If calculations or filters are needed (e.g., counting, finding uniqueness, filtering), describe them explicitly.
+  - If dates are involved, indicate the relationship or transformation needed (e.g., time difference).
+  - Provide results in a structured format to clarify the logic of the query.
+
+  #Output Format
+  A single string with the instruction
+  # Examples
+
+  ### Example 1
+  **user_query**: How many shipments are in the system?  
+  **Output**:  
+  Count the number of unique values in load_id_pseudo column.  
+  ---
+
+  ### Example 2
+  **user_query**: How many shipments arrived on time?  
+  **Output**:  
+  Count the number of unique values in load_id_pseudo and where the "otd_designation" column equals "On-Time".  
+
+  ---
+
+  ### Example 3  
+  **user_query**: What is the average transit time in days for small shipments?  
+  **Output**:  
+  Select all the shipments where carrier_mode == "LTL" and compute the average in "actual_transit_days".  
+  ---
+
+  ### Example 4  
+  **user_query**: How many shipments originated from zip code 441xx?  
+  **Output**:  
+  Count the number of unique load_id_pseudo that have "origin_zip_3d" column equal to "441xx".  
+
+    ### Example 7  
+  **user_query**: How many parcels were sent by a dry van?  
+  **Output**:  
+  Count the number of unique load_id_pseudo that have "carrier_mode" column equal to "TL Dry". 
+
+  ### Example 8  
+  **user_query**: I want to visualize the number of packages per zip lane  
+  **Output**:  
+  Plot the number of unique values in load_id_pseudo by "lane_zip3_pair".
+
+   ### Example 9  
+  **user_query**: Create a pie chart of the number of packages per on time designation 
+  **Output**:  
+  Plot a pie chart with the number of unique values in load_id_pseudo for each unique "otd_designation".
+ 
+
+  # Notes
+
+  - If the query is ambiguous or unclear, infer the best possible answer based on logical assumptions, but make it explicit in the output that it's an inference.
+  - There can be multiple rows with the same shipment id. So if the output requires to count the number of shipments, make sure that the instruction unique is used
+  - shipment ids, package ids, parcel ids are interchangeable
+  
+
+
