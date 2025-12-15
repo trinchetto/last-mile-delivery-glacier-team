@@ -8,7 +8,7 @@ import {
   AgentDashboard
 } from './chat'
 
-const ChatInterface = () => {
+const ChatInterface = ({ showDashboard = true }) => {
   // Core state
   const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
@@ -423,8 +423,6 @@ const ChatInterface = () => {
     }
   }
 
-  const hasArtifact = analysisResult !== null || analyticalAgentWorking
-
   // Render Chat Interface
   return (
     <div className="flex flex-col h-full bg-midnight-950">
@@ -444,36 +442,17 @@ const ChatInterface = () => {
         <div className="flex flex-1 overflow-hidden">
           {/* Chat Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white">DeliveryIQ Assistant</h2>
-                  <p className="text-xs text-slate-400">AI-powered last-mile delivery analysis</p>
-                </div>
-              </div>
-              <button
-                onClick={clearSession}
-                className="px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
-              >
-                New Chat
-              </button>
-            </div>
-
             {/* Messages */}
             <div
               ref={messagesContainerRef}
               className="hide-scrollbar flex-1 overflow-y-auto"
               style={{ scrollBehavior: 'smooth' }}
             >
-              <div className={`mx-auto p-6 ${hasArtifact ? 'max-w-full' : 'max-w-4xl'}`}>
+              <div className={`mx-auto p-6 ${showDashboard ? 'max-w-full' : 'max-w-4xl'}`}>
                 <MessageList
                   messages={messages}
                   lastMessageRef={lastMessageRef}
-                  hasArtifact={hasArtifact}
+                  hasArtifact={showDashboard}
                 />
                 <div ref={messagesEndRef} />
               </div>
@@ -496,7 +475,7 @@ const ChatInterface = () => {
           </div>
 
           {/* Agent Dashboard */}
-          {hasArtifact && (
+          {showDashboard && (
             <AgentDashboard
               analysisResult={analysisResult}
               isAnalyticalWorking={analyticalAgentWorking}

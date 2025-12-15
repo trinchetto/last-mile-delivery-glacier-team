@@ -23,6 +23,29 @@ function App() {
     // State for help modal
     const [showHelp, setShowHelp] = useState(false);
 
+    // State for sidebar
+    const [sidebarMinimized, setSidebarMinimized] = useState(false);
+
+    // State for chat reset (incrementing key forces ChatInterface to remount)
+    const [chatResetKey, setChatResetKey] = useState(0);
+
+    // State for agent dashboard visibility
+    const [showAgentDashboard, setShowAgentDashboard] = useState(true);
+
+    // Handle new chat - clears localStorage and remounts ChatInterface
+    const handleNewChat = useCallback(() => {
+        localStorage.removeItem('deliveryiq_thread_id');
+        localStorage.removeItem('deliveryiq_result');
+        localStorage.removeItem('deliveryiq_messages');
+        localStorage.removeItem('deliveryiq_is_first');
+        setChatResetKey(prev => prev + 1);
+    }, []);
+
+    // Toggle agent dashboard
+    const toggleAgentDashboard = useCallback(() => {
+        setShowAgentDashboard(prev => !prev);
+    }, []);
+
     // Handle analyze button click
     const handleAnalyze = useCallback(() => {
         if (!selectedLane || !selectedCarrier) return;
@@ -79,6 +102,11 @@ function App() {
                 isAnalyzing={isAnalyzing}
                 activeView={activeView}
                 setActiveView={setActiveView}
+                isMinimized={sidebarMinimized}
+                setIsMinimized={setSidebarMinimized}
+                onNewChat={handleNewChat}
+                showAgentDashboard={showAgentDashboard}
+                onToggleAgentDashboard={toggleAgentDashboard}
             />
 
             <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -111,7 +139,7 @@ function App() {
                 )}
 
                 {activeView === 'chat' && (
-                    <ChatInterface />
+                    <ChatInterface key={chatResetKey} showDashboard={showAgentDashboard} />
                 )}
 
                 {activeView === 'analytics' && (
