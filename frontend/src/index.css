@@ -37,6 +37,18 @@ body {
   background: #475569;
 }
 
+/* Select dropdown dark theme */
+select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 8px 12px;
+}
+
+select option:checked {
+  background: linear-gradient(#334155, #334155);
+  color: #38bdf8;
+}
+
 @layer components {
   .glass-card {
     @apply backdrop-blur-xl shadow-xl;

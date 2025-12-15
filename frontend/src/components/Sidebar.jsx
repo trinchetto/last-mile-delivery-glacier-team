@@ -126,7 +126,7 @@ const Sidebar = ({
                                 <select
                                     value={selectedLane}
                                     onChange={(e) => setSelectedLane(e.target.value)}
-                                    className="w-full bg-midnight-950/50 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all hover:border-white/20"
+                                    className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none transition-all hover:border-white/20 cursor-pointer"
                                 >
                                     <option value="">Select a lane...</option>
                                     {lanes.map((lane) => (
@@ -146,7 +146,7 @@ const Sidebar = ({
                                 <select
                                     value={selectedCarrier}
                                     onChange={(e) => setSelectedCarrier(e.target.value)}
-                                    className="w-full bg-midnight-950/50 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all hover:border-white/20"
+                                    className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none transition-all hover:border-white/20 cursor-pointer"
                                 >
                                     <option value="">Select a carrier...</option>
                                     {carriers.map((carrier) => (
@@ -167,7 +167,7 @@ const Sidebar = ({
                                     type="date"
                                     value={shipDate}
                                     onChange={(e) => setShipDate(e.target.value)}
-                                    className="w-full bg-midnight-950/50 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all hover:border-white/20"
+                                    className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none transition-all hover:border-white/20 cursor-pointer"
                                 />
                             </div>
 

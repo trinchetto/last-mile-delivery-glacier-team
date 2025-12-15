@@ -457,12 +457,8 @@ const EmptyState = ({
       </div>
 
       <div className="text-center mb-12 z-10" style={{ animation: 'fadeIn 0.3s ease' }}>
-        <div className="w-24 h-24 bg-gradient-to-br from-primary-500/20 to-accent-purple/20 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-purple/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all"></div>
-          <MessageSquare className="w-12 h-12 text-primary-400 relative z-10 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]" />
-        </div>
         <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-4 tracking-tight">
-          DeliveryIQ Assistant
+          DeliveryIQ Agent
         </h2>
         <p className="text-lg text-slate-400 max-w-lg mx-auto leading-relaxed">
           Ask me about <span className="text-primary-400 font-medium">delivery risks</span>, lane performance, carrier recommendations, or any logistics questions.
