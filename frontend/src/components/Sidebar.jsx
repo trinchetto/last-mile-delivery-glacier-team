@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Truck, Package, Settings, BarChart2, Zap, Search, MapPin, Calendar, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Truck, Package, Settings, BarChart2, Zap, Search, MapPin, Calendar, HelpCircle, MessageSquare } from 'lucide-react';
 import { lanes, carriers } from '../data/mockData';
 
 const Sidebar = ({
@@ -160,6 +160,16 @@ const Sidebar = ({
                     >
                         <BarChart2 size={20} />
                         <span>Analytics</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveView('chat')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${activeView === 'chat'
+                                ? 'text-primary-400 bg-primary-500/10 border border-primary-500/20 shadow-lg shadow-primary-500/5'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                            }`}
+                    >
+                        <MessageSquare size={20} />
+                        <span>AI Assistant</span>
                     </button>
                 </nav>
 

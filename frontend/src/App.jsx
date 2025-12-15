@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProblematicLanesTable from './components/ProblematicLanesTable';
 import HelpModal from './components/HelpModal';
+import ChatInterface from './components/ChatInterface';
 import { generateRiskAnalysis, problematicLanes, carrierComparison, transitProbability, similarShipments, historicalPerformance } from './data/mockData';
 
 function App() {
@@ -107,6 +108,10 @@ function App() {
                             onLaneSelect={handleLaneSelect}
                         />
                     </div>
+                )}
+
+                {activeView === 'chat' && (
+                    <ChatInterface />
                 )}
 
                 {activeView === 'analytics' && (
