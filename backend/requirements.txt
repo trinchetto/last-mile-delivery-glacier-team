@@ -16,3 +16,9 @@ fastapi
 uvicorn
 
 dotenv
+
+pandasai
+pandasai_litellm
+litellm
+PyYAML
+pandas

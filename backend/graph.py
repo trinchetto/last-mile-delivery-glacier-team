@@ -211,7 +211,7 @@ async def chat_node(
         "chat_response": response,
     }
 
-    # Check if we need to route to analytical agent
+    # Check if we need to route to analytical agent (tool was called)
     if visualization_request:
         return Command(
             update={

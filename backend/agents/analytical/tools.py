@@ -443,10 +443,19 @@ def clear_dashboard() -> str:
 
 
 # =============================================================================
+# IMPORT DATA QUERY TOOL
+# =============================================================================
+
+from agents.analytical.data_tool import query_shipment_data
+
+# =============================================================================
 # EXPORT TOOLS
 # =============================================================================
 
 ANALYTICAL_TOOLS = [
+    # Data query tool - use this FIRST to get real data
+    query_shipment_data,
+    # Visualization tools
     create_pie_chart,
     create_bar_chart,
     create_line_chart,
