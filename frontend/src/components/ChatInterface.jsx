@@ -22,6 +22,9 @@ const ChatInterface = ({ showDashboard = true }) => {
   // Agent status (for showing spinner when analytical agent is working)
   const [analyticalAgentWorking, setAnalyticalAgentWorking] = useState(false)
 
+  // View transition - track if we should animate the chat view entrance
+  const [shouldAnimateEntrance, setShouldAnimateEntrance] = useState(true)
+
   // Scroll management refs
   const messagesEndRef = useRef(null)
   const lastMessageRef = useRef(null)
@@ -31,6 +34,7 @@ const ChatInterface = ({ showDashboard = true }) => {
 
   // Inject CSS animations on mount
   useEffect(() => { injectStyles() }, [])
+
 
   // Auto-scroll when new messages arrive
   useEffect(() => {
@@ -67,7 +71,11 @@ const ChatInterface = ({ showDashboard = true }) => {
     }
     if (savedMessages) {
       try {
-        setMessages(JSON.parse(savedMessages))
+        const parsedMessages = JSON.parse(savedMessages)
+        setMessages(parsedMessages)
+        if (parsedMessages.length > 0) {
+          setShouldAnimateEntrance(false) // Skip animation for restored sessions
+        }
       } catch (e) { console.error('Error parsing saved messages:', e) }
     }
     if (savedIsFirst !== null) {
@@ -94,6 +102,7 @@ const ChatInterface = ({ showDashboard = true }) => {
     setAnalysisResult(null)
     setMessages([])
     setIsFirstMessage(true)
+    setShouldAnimateEntrance(true) // Re-enable animation for next session
   }
 
   // Handle first message - start new analysis with streaming
@@ -388,7 +397,7 @@ const ChatInterface = ({ showDashboard = true }) => {
   // Render Chat Interface
   return (
     <div className="flex flex-col h-full bg-midnight-950">
-      {/* Empty State */}
+      {/* Empty State - show when no messages */}
       {messages.length === 0 ? (
         <EmptyState
           inputValue={inputValue}
@@ -397,7 +406,9 @@ const ChatInterface = ({ showDashboard = true }) => {
           onSend={sendMessage}
         />
       ) : (
-        <div className="flex flex-1 overflow-hidden">
+        <div
+          className={`flex flex-1 overflow-hidden ${shouldAnimateEntrance ? 'view-transition-enter' : ''}`}
+          onAnimationEnd={() => setShouldAnimateEntrance(false)}>
           {/* Chat Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Messages */}
@@ -499,7 +510,7 @@ const BackgroundLineChart = () => (
       <g className="scroll-wave-1">
         <path
           fill="url(#areaGradient1)"
-          d="M0,160 Q300,80 600,180 T1200,160 T1800,180 T2400,160 L2400,600 L0,600 Z"
+          d="M0,200 Q300,140 600,220 T1200,200 T1800,220 T2400,200 L2400,600 L0,600 Z"
         />
         <path
           fill="none"
@@ -507,7 +518,7 @@ const BackgroundLineChart = () => (
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M0,160 Q300,80 600,180 T1200,160 T1800,180 T2400,160"
+          d="M0,200 Q300,140 600,220 T1200,200 T1800,220 T2400,200"
         />
       </g>
 
@@ -515,7 +526,7 @@ const BackgroundLineChart = () => (
       <g className="scroll-wave-2">
         <path
           fill="url(#areaGradient2)"
-          d="M0,300 Q250,420 500,200 T1000,340 T1500,200 T2000,340 T2400,300 L2400,600 L0,600 Z"
+          d="M0,340 Q300,420 600,280 T1200,340 T1800,280 T2400,340 L2400,600 L0,600 Z"
         />
         <path
           fill="none"
@@ -523,7 +534,7 @@ const BackgroundLineChart = () => (
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M0,300 Q250,420 500,200 T1000,340 T1500,200 T2000,340 T2400,300"
+          d="M0,340 Q300,420 600,280 T1200,340 T1800,280 T2400,340"
         />
       </g>
 
@@ -536,15 +547,15 @@ const BackgroundLineChart = () => (
           strokeOpacity="0.4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M0,440 Q400,520 800,400 T1600,440 T2400,440"
+          d="M0,460 Q600,520 1200,460 T2400,460"
         />
       </g>
 
-      {/* Wave 4 - Green - highest z-index, unique phase (seamless loop) */}
+      {/* Wave 4 - Green - highest z-index, different rhythm from purple (seamless loop) */}
       <g className="scroll-wave-4" style={{ isolation: 'isolate' }}>
         <path
           fill="url(#areaGradient3)"
-          d="M0,260 Q300,400 600,160 T1200,260 T1800,160 T2400,260 L2400,600 L0,600 Z"
+          d="M0,260 Q400,180 800,320 T1600,260 T2400,260 L2400,600 L0,600 Z"
         />
         <path
           fill="none"
@@ -552,7 +563,7 @@ const BackgroundLineChart = () => (
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M0,260 Q300,400 600,160 T1200,260 T1800,160 T2400,260"
+          d="M0,260 Q400,180 800,320 T1600,260 T2400,260"
         />
       </g>
     </svg>

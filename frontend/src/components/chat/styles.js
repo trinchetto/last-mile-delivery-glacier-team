@@ -37,6 +37,32 @@ export const injectStyles = () => {
           transform: translateY(0);
         }
       }
+      @keyframes fadeOutScale {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(0.98);
+        }
+      }
+      @keyframes slideInFromBottom {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .view-transition-exit {
+        animation: fadeOutScale 0.3s ease-out forwards;
+      }
+      .view-transition-enter {
+        animation: slideInFromBottom 0.4s ease-out forwards;
+      }
     `
     document.head.appendChild(style)
   }
