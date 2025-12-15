@@ -22,3 +22,4 @@ pandasai_litellm
 litellm
 PyYAML
 pandas
+uszipcode

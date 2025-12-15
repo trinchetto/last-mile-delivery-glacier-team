@@ -65,23 +65,23 @@ def query_shipment_data(query: str) -> str:
     Available data columns:
     - carrier_name: Friendly carrier name (e.g., "Swift Freight", "Eagle Logistics")
     - carrier_mode: Transportation mode (LTL, Truckload, TL Dry, TL Flatbed)
-    - carrier_pseudo: Carrier ID (anonymized) - prefer carrier_name for display
     - actual_ship / actual_delivery: Datetime of shipment and delivery
     - customer_distance: Miles between origin and destination
     - all_modes_goal_transit_days: Target transit days
     - actual_transit_days: Actual transit days taken
     - otd_designation: On-Time Delivery status (On-Time, Delivered Early, Late)
+    - origin_state / dest_state: State abbreviation (CA, TX, NY, etc.)
+    - origin_state_name / dest_state_name: Full state name (California, Texas, etc.)
     - origin_zip_3d / dest_zip_3d: 3-digit zip codes
     - lane_zip3_pair: Route identifier (origin->destination)
-    - lane_id: Lane identifier
 
     Example queries:
     - "Count shipments by carrier_name"
     - "Calculate on-time delivery rate by carrier_name"
-    - "Average transit days by lane"
-    - "Top 10 carriers by shipment count, show carrier_name"
+    - "Shipments by origin_state_name"
+    - "Top 10 carriers by shipment count"
     - "Distribution of otd_designation"
-    - "Monthly shipment trends"
+    - "Deliveries from Texas to California"
 
     Args:
         query: Natural language query about shipment data.

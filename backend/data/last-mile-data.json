@@ -68,5 +68,25 @@
     "name": "carrier_name",
     "type": "string",
     "description": "Friendly name for the carrier (e.g., 'Swift Freight', 'Eagle Logistics')"
+  },
+  {
+    "name": "origin_state",
+    "type": "string",
+    "description": "Origin state abbreviation (e.g., 'CA', 'TX', 'NY')"
+  },
+  {
+    "name": "origin_state_name",
+    "type": "string",
+    "description": "Origin state full name (e.g., 'California', 'Texas')"
+  },
+  {
+    "name": "dest_state",
+    "type": "string",
+    "description": "Destination state abbreviation (e.g., 'CA', 'TX', 'NY')"
+  },
+  {
+    "name": "dest_state_name",
+    "type": "string",
+    "description": "Destination state full name (e.g., 'California', 'Texas')"
   }
 ]

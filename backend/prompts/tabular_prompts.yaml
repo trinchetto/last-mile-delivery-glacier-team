@@ -21,12 +21,17 @@ prompt_understanding: |
                        know the package delivery status, package state or delivery result
     *load_id_pseudo*: Shipment ID/Parcel ID/Package ID
     *carrier_pseudo*: Carrier ID (internal use only, prefer carrier_name for display)
-    *origin_zip_3d*: Origin zip code in the US.
-    *dest_zip_3d*: Destination  zip code in the US.
+    *origin_state*: Origin state abbreviation (e.g., "CA", "TX", "NY")
+    *origin_state_name*: Origin state full name (e.g., "California", "Texas", "New York")
+    *dest_state*: Destination state abbreviation (e.g., "CA", "TX", "NY")
+    *dest_state_name*: Destination state full name (e.g., "California", "Texas", "New York")
+    *origin_zip_3d*: Origin zip code in the US (prefer state names for display)
+    *dest_zip_3d*: Destination zip code in the US (prefer state names for display)
     *lane_zip3_pair*: Zip code origin -> Zip code destiny pair. Can be refered to as: zip lane, zip line, track, route
     *lane_id*: An identifier for the Lane zip pair
     Reference these columns directly in your instruction.
   - IMPORTANT: Always use carrier_name (not carrier_pseudo) when the output will be shown to users.
+  - IMPORTANT: Always use origin_state_name/dest_state_name (not zip codes) when displaying locations.
   - Ensure that each response is clearly mapped to processing actions involving the relevant data column(s).
   - If calculations or filters are needed (e.g., counting, finding uniqueness, filtering), describe them explicitly.
   - If dates are involved, indicate the relationship or transformation needed (e.g., time difference).
@@ -123,8 +128,12 @@ answer_explanation: |
                        know the package delivery status, package state or delivery result
     *load_id_pseudo*: Shipment ID/Parcel ID/Package ID
     *carrier_pseudo*: Carrier ID (internal, do not show to users)
-    *origin_zip_3d*: Origin zip code in the US.
-    *dest_zip_3d*: Destination  zip code in the US.
+    *origin_state*: Origin state abbreviation (e.g., "CA", "TX")
+    *origin_state_name*: Origin state full name (e.g., "California", "Texas")
+    *dest_state*: Destination state abbreviation (e.g., "CA", "TX")
+    *dest_state_name*: Destination state full name (e.g., "California", "Texas")
+    *origin_zip_3d*: Origin zip code (prefer state names for display)
+    *dest_zip_3d*: Destination zip code (prefer state names for display)
     *lane_zip3_pair*: Zip code origin -> Zip code destiny pair.
     *lane_id*: An identifier for the Lane zip pair
 
