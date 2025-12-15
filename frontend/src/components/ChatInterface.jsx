@@ -441,6 +441,124 @@ const ChatInterface = ({ showDashboard = true }) => {
   )
 }
 
+// Background Line Chart SVG Component with Streaming Data Animation
+const BackgroundLineChart = () => (
+  <div className="absolute inset-0 w-full h-full opacity-[0.15] overflow-hidden">
+    <style>{`
+      @keyframes scrollWave1 {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
+      }
+      @keyframes scrollWave2 {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
+      }
+      @keyframes scrollWave3 {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
+      }
+      .scroll-wave-1 { animation: scrollWave1 120s linear infinite; }
+      .scroll-wave-2 { animation: scrollWave2 100s linear infinite; }
+      .scroll-wave-3 { animation: scrollWave3 150s linear infinite; }
+      @keyframes scrollWave4 {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
+      }
+      .scroll-wave-4 { animation: scrollWave4 110s linear infinite; }
+    `}</style>
+    <svg
+      className="w-[200%] h-full"
+      viewBox="0 0 2400 600"
+      preserveAspectRatio="xMidYMid slice"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="areaGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="areaGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="areaGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#4ade80" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#4ade80" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {/* Grid lines - static */}
+      {[0, 150, 300, 450, 600, 750, 900, 1050, 1200].map((x, i) => (
+        <line key={`v-${i}`} x1={x} y1="50" x2={x} y2="550" stroke="#334155" strokeWidth="1" strokeOpacity="0.2" />
+      ))}
+      {[100, 200, 300, 400, 500].map((y, i) => (
+        <line key={`h-${i}`} x1="0" y1={y} x2="1200" y2={y} stroke="#334155" strokeWidth="1" strokeOpacity="0.2" />
+      ))}
+
+      {/* Wave 1 - Teal/Cyan - mostly highest (seamless loop) */}
+      <g className="scroll-wave-1">
+        <path
+          fill="url(#areaGradient1)"
+          d="M0,160 Q300,80 600,180 T1200,160 T1800,180 T2400,160 L2400,600 L0,600 Z"
+        />
+        <path
+          fill="none"
+          stroke="#38bdf8"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M0,160 Q300,80 600,180 T1200,160 T1800,180 T2400,160"
+        />
+      </g>
+
+      {/* Wave 2 - Purple - mostly lower, offset phase (seamless loop) */}
+      <g className="scroll-wave-2">
+        <path
+          fill="url(#areaGradient2)"
+          d="M0,300 Q250,420 500,200 T1000,340 T1500,200 T2000,340 T2400,300 L2400,600 L0,600 Z"
+        />
+        <path
+          fill="none"
+          stroke="#a78bfa"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M0,300 Q250,420 500,200 T1000,340 T1500,200 T2000,340 T2400,300"
+        />
+      </g>
+
+      {/* Wave 3 - Subtle accent - lowest, different rhythm (seamless loop) */}
+      <g className="scroll-wave-3">
+        <path
+          fill="none"
+          stroke="#38bdf8"
+          strokeWidth="1.5"
+          strokeOpacity="0.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M0,440 Q400,520 800,400 T1600,440 T2400,440"
+        />
+      </g>
+
+      {/* Wave 4 - Green - highest z-index, unique phase (seamless loop) */}
+      <g className="scroll-wave-4" style={{ isolation: 'isolate' }}>
+        <path
+          fill="url(#areaGradient3)"
+          d="M0,260 Q300,400 600,160 T1200,260 T1800,160 T2400,260 L2400,600 L0,600 Z"
+        />
+        <path
+          fill="none"
+          stroke="#4ade80"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M0,260 Q300,400 600,160 T1200,260 T1800,160 T2400,260"
+        />
+      </g>
+    </svg>
+  </div>
+)
+
 // Empty State Component
 const EmptyState = ({
   inputValue,
@@ -449,12 +567,14 @@ const EmptyState = ({
   onSend
 }) => {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+    <div className="flex-1 flex flex-col items-center justify-center p-8 relative overflow-hidden">
+      {/* Background Line Chart Effect */}
+      <div className="absolute inset-0 pointer-events-none">
+        <BackgroundLineChart />
       </div>
+
+      {/* Gradient overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-t from-midnight-950 via-transparent to-midnight-950/80 pointer-events-none"></div>
 
       <div className="text-center mb-12 z-10" style={{ animation: 'fadeIn 0.3s ease' }}>
         <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-4 tracking-tight">
@@ -475,7 +595,7 @@ const EmptyState = ({
           <button
             key={idx}
             onClick={() => setInputValue(prompt)}
-            className="p-3 text-sm text-left text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-primary-500/50 rounded-xl transition-all"
+            className="p-3 text-sm text-left text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-primary-500/50 rounded-xl transition-all backdrop-blur-sm"
           >
             {prompt}
           </button>
