@@ -80,7 +80,7 @@ function App() {
                 setActiveView={setActiveView}
             />
 
-            <main className="flex-1 overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden relative">
                 {activeView === 'dashboard' && (
                     <Dashboard
                         analysisResult={analysisResult}
@@ -147,7 +147,7 @@ function App() {
                                         <div className="mb-2">
                                             <div
                                                 className={`mx-auto w-12 rounded-t-lg ${month.on_time >= 80 ? 'bg-green-500' :
-                                                        month.on_time >= 75 ? 'bg-yellow-500' : 'bg-red-500'
+                                                    month.on_time >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                                     }`}
                                                 style={{ height: `${month.on_time * 1.5}px` }}
                                             />
