@@ -43,7 +43,7 @@ You have ONE tool: request_data_analysis
 
 THE ANALYTICAL AGENT (accessed via request_data_analysis) has:
 - Real shipment database with ~10K records
-- Data: carrier_mode, carrier_pseudo, actual_transit_days, otd_designation (On-Time/Late/Delivered Early), origin_zip_3d, dest_zip_3d, lane_zip3_pair
+- Data: carrier_name (friendly names like "Swift Freight", "Eagle Logistics"), carrier_mode, actual_transit_days, otd_designation (On-Time/Late/Delivered Early), origin_zip_3d, dest_zip_3d, lane_zip3_pair
 - Visualization tools (charts, graphs, metrics, tables)
 
 WHEN TO USE request_data_analysis:

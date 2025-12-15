@@ -63,8 +63,9 @@ def query_shipment_data(query: str) -> str:
     Use this to get actual data for charts and visualizations.
 
     Available data columns:
+    - carrier_name: Friendly carrier name (e.g., "Swift Freight", "Eagle Logistics")
     - carrier_mode: Transportation mode (LTL, Truckload, TL Dry, TL Flatbed)
-    - carrier_pseudo: Carrier ID (anonymized)
+    - carrier_pseudo: Carrier ID (anonymized) - prefer carrier_name for display
     - actual_ship / actual_delivery: Datetime of shipment and delivery
     - customer_distance: Miles between origin and destination
     - all_modes_goal_transit_days: Target transit days
@@ -75,10 +76,10 @@ def query_shipment_data(query: str) -> str:
     - lane_id: Lane identifier
 
     Example queries:
-    - "Count shipments by carrier_mode"
-    - "Calculate on-time delivery rate by carrier"
+    - "Count shipments by carrier_name"
+    - "Calculate on-time delivery rate by carrier_name"
     - "Average transit days by lane"
-    - "Top 10 carriers by shipment count"
+    - "Top 10 carriers by shipment count, show carrier_name"
     - "Distribution of otd_designation"
     - "Monthly shipment trends"
 

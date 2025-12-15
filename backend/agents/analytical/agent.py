@@ -67,8 +67,9 @@ query_shipment_data(query: str) -> JSON
 - Data is returned as array of records, e.g., [{"carrier_pseudo": "C1", "on_time_rate": 0.92}, ...]
 
 AVAILABLE DATABASE COLUMNS:
+- carrier_name: Friendly carrier name (e.g., "Swift Freight", "Eagle Logistics", "Prime Solutions")
 - carrier_mode: Transportation mode (LTL, Truckload, TL Dry, TL Flatbed)
-- carrier_pseudo: Carrier ID (anonymized)
+- carrier_pseudo: Carrier ID (anonymized) - prefer using carrier_name instead
 - actual_ship / actual_delivery: Datetime of shipment and delivery
 - customer_distance: Miles between origin and destination
 - all_modes_goal_transit_days: Target transit days
@@ -76,6 +77,8 @@ AVAILABLE DATABASE COLUMNS:
 - otd_designation: On-Time Delivery status (On-Time, Delivered Early, Late)
 - origin_zip_3d / dest_zip_3d: 3-digit zip codes
 - lane_zip3_pair: Route identifier (origin->destination)
+
+IMPORTANT: Always use carrier_name (not carrier_pseudo) when displaying carrier information to users.
 
 VISUALIZATION TOOLS:
 

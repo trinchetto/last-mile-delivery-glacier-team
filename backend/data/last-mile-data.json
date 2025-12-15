@@ -1,67 +1,72 @@
 [
-    {
-      "name": "carrier_mode",
-      "type": "string",
-      "description": "Mode of transportation label, can be one of the following modes: LT,Truckload,TL Dry, TL Flatbed"
-    },
-    {
-      "name": "actual_ship",
-      "type": "datetime",
-      "description": "The actual date when the shipment was dispatched. The format is YYYY-mm-dd HH:MM"
-    },
-    {
-      "name": "actual_delivery",
-      "type": "datetime",
-      "description": "The actual date when the shipment was delivered. The format is YYYY-mm-dd HH:MM"
-    },
-    {
-      "name": "customer_distance",
-      "type": "integer",
-      "description": "Distance in miles between origin and destination"
-    },
-    {
-      "name": "all_modes_goal_transit_days",
-      "type": "integer",
-      "description": "Target number of transit days"
-    },
-    {
-      "name": "actual_transit_days",
-      "type": "integer",
-      "description": "Actual number of days taken for the shipment to be delivered"
-    },
-    {
-      "name": "otd_designation",
-      "type": "string",
-      "description": "On-Time Delivery designation. It can be Late, On-Time, Delivered Early"
-    },
-    {
-      "name": "load_id_pseudo",
-      "type": "string",
-      "description": "Shipment ID/Parcel ID/Package ID"
-    },
-    {
-      "name": "carrier_pseudo",
-      "type": "string",
-      "description": "Carrier ID"
-    },
-    {
-      "name": "origin_zip_3d",
-      "type": "string",
-      "description": "Origin zip code in the US. Only the three first numbers are displayed"
-    },
-    {
-      "name": "dest_zip_3d",
-      "type": "string",
-      "description": "Destination zip code in the US. Only the three first numbers are displayed"
-    },
-    {
-      "name": "lane_zip3_pair",
-      "type": "string",
-      "description": "Zip code origin -> Zip code destiny pair."
-    },
-    {
-      "name": "lane_id",
-      "type": "string",
-      "description": "An identifier for the Lane zip pair"
-    }
+  {
+    "name": "carrier_mode",
+    "type": "string",
+    "description": "Mode of transportation label, can be one of the following modes: LT,Truckload,TL Dry, TL Flatbed"
+  },
+  {
+    "name": "actual_ship",
+    "type": "datetime",
+    "description": "The actual date when the shipment was dispatched. The format is YYYY-mm-dd HH:MM"
+  },
+  {
+    "name": "actual_delivery",
+    "type": "datetime",
+    "description": "The actual date when the shipment was delivered. The format is YYYY-mm-dd HH:MM"
+  },
+  {
+    "name": "customer_distance",
+    "type": "integer",
+    "description": "Distance in miles between origin and destination"
+  },
+  {
+    "name": "all_modes_goal_transit_days",
+    "type": "integer",
+    "description": "Target number of transit days"
+  },
+  {
+    "name": "actual_transit_days",
+    "type": "integer",
+    "description": "Actual number of days taken for the shipment to be delivered"
+  },
+  {
+    "name": "otd_designation",
+    "type": "string",
+    "description": "On-Time Delivery designation. It can be Late, On-Time, Delivered Early"
+  },
+  {
+    "name": "load_id_pseudo",
+    "type": "string",
+    "description": "Shipment ID/Parcel ID/Package ID"
+  },
+  {
+    "name": "carrier_pseudo",
+    "type": "string",
+    "description": "Carrier ID"
+  },
+  {
+    "name": "origin_zip_3d",
+    "type": "string",
+    "description": "Origin zip code in the US. Only the three first numbers are displayed"
+  },
+  {
+    "name": "dest_zip_3d",
+    "type": "string",
+    "description": "Destination zip code in the US. Only the three first numbers are displayed"
+  },
+  {
+    "name": "lane_zip3_pair",
+    "type": "string",
+    "description": "Zip code origin -> Zip code destiny pair."
+  },
+  {
+    "name": "lane_id",
+    "type": "string",
+    "description": "An identifier for the Lane zip pair"
+  },
+  {
+    "name": "carrier_name",
+    "type": "string",
+    "description": "Friendly name for the carrier (e.g., 'Swift Freight', 'Eagle Logistics')"
+  }
 ]
