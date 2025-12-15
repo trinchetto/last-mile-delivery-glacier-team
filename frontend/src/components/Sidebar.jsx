@@ -268,14 +268,10 @@ const Sidebar = ({
                                 <nav className="space-y-1">
                                     <button
                                         onClick={onToggleAgentDashboard}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                                            showAgentDashboard
-                                                ? 'text-primary-400 bg-primary-500/10 border border-primary-500/20 shadow-lg shadow-primary-500/5'
-                                                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                                        }`}
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-white/5"
                                     >
                                         <BarChart2 size={20} />
-                                        <span>Agent Dashboard</span>
+                                        <span>{showAgentDashboard ? 'Hide Dashboard' : 'Show Dashboard'}</span>
                                     </button>
                                     <button
                                         onClick={onNewChat}

@@ -78,18 +78,20 @@ function App() {
             {/* Help Modal */}
             <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
 
-            {/* Floating Help Button */}
-            <button
-                onClick={() => setShowHelp(true)}
-                className="fixed bottom-8 right-8 z-40 w-14 h-14 bg-gradient-to-r from-primary-500 to-accent-purple hover:from-primary-400 hover:to-accent-purple/90 rounded-full shadow-lg shadow-primary-500/25 flex items-center justify-center text-white transition-all hover:scale-110 hover:-translate-y-1 border border-white/20 animate-float"
-                title="Help - Click for guide"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                    <path d="M12 17h.01"></path>
-                </svg>
-            </button>
+            {/* Floating Help Button - hidden on chat view */}
+            {activeView !== 'chat' && (
+                <button
+                    onClick={() => setShowHelp(true)}
+                    className="fixed bottom-8 right-8 z-40 w-14 h-14 bg-gradient-to-r from-primary-500 to-accent-purple hover:from-primary-400 hover:to-accent-purple/90 rounded-full shadow-lg shadow-primary-500/25 flex items-center justify-center text-white transition-all hover:scale-110 hover:-translate-y-1 border border-white/20 animate-float"
+                    title="Help - Click for guide"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <path d="M12 17h.01"></path>
+                    </svg>
+                </button>
+            )}
 
             <Sidebar
                 selectedLane={selectedLane}

@@ -22,11 +22,6 @@ const ChatInterface = ({ showDashboard = true }) => {
   // Agent status (for showing spinner when analytical agent is working)
   const [analyticalAgentWorking, setAnalyticalAgentWorking] = useState(false)
 
-  // Image upload state
-  const [selectedImage, setSelectedImage] = useState(null)
-  const fileInputRef = useRef(null)
-
-
   // Scroll management refs
   const messagesEndRef = useRef(null)
   const lastMessageRef = useRef(null)
@@ -87,32 +82,6 @@ const ChatInterface = ({ showDashboard = true }) => {
     if (messages.length > 0) localStorage.setItem('deliveryiq_messages', JSON.stringify(messages))
     localStorage.setItem('deliveryiq_is_first', String(isFirstMessage))
   }, [threadId, analysisResult, messages, isFirstMessage])
-
-  // Handle image file selection
-  const handleImageSelect = (file) => {
-    if (!file) return
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Image size must be less than 10MB')
-      return
-    }
-    const preview = URL.createObjectURL(file)
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const base64 = reader.result.split(',')[1]
-      setSelectedImage({ file, preview, base64 })
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const removeSelectedImage = () => {
-    if (selectedImage?.preview) URL.revokeObjectURL(selectedImage.preview)
-    setSelectedImage(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
 
   // Clear session data
   const clearSession = () => {
@@ -254,12 +223,12 @@ const ChatInterface = ({ showDashboard = true }) => {
   }
 
   // Handle follow-up messages
-  const handleChatMessage = async (userMessage, imageData = null) => {
+  const handleChatMessage = async (userMessage) => {
     try {
       // Track tool calls to avoid duplicates
       const reportedTools = new Set()
 
-      const result = await sendChatMessage(threadId, userMessage, imageData, (event) => {
+      const result = await sendChatMessage(threadId, userMessage, null, (event) => {
         // Stream ended - finalize all messages
         if (event.type === 'stream_end') {
           setMessages(prev => prev.map(m => m.isStreaming ? { ...m, isStreaming: false } : m))
@@ -393,30 +362,23 @@ const ChatInterface = ({ showDashboard = true }) => {
   // Send message handler
   const sendMessage = async () => {
     const userMessage = inputValue.trim()
-    if (!userMessage && !selectedImage) return
+    if (!userMessage) return
 
     setIsLoading(true)
     setInputValue('')
     shouldAutoScroll.current = true
 
-    const imageForDisplay = selectedImage?.base64 ? `data:image/png;base64,${selectedImage.base64}` : null
-    const imageData = selectedImage?.base64
-    const imageName = selectedImage?.file?.name
-    removeSelectedImage()
-
     // Add user message
     setMessages(prev => [...prev, {
       type: 'user',
-      content: userMessage || '(Uploaded image)',
-      image: imageForDisplay,
-      imageName
+      content: userMessage
     }])
 
     try {
       if (isFirstMessage || !threadId) {
         await handleFirstMessage(userMessage)
       } else {
-        await handleChatMessage(userMessage, imageData)
+        await handleChatMessage(userMessage)
       }
     } finally {
       setIsLoading(false)
@@ -431,12 +393,8 @@ const ChatInterface = ({ showDashboard = true }) => {
         <EmptyState
           inputValue={inputValue}
           setInputValue={setInputValue}
-          selectedImage={selectedImage}
           isLoading={isLoading}
           onSend={sendMessage}
-          onImageSelect={handleImageSelect}
-          onRemoveImage={removeSelectedImage}
-          fileInputRef={fileInputRef}
         />
       ) : (
         <div className="flex flex-1 overflow-hidden">
@@ -463,12 +421,8 @@ const ChatInterface = ({ showDashboard = true }) => {
               <ChatInput
                 inputValue={inputValue}
                 setInputValue={setInputValue}
-                selectedImage={selectedImage}
                 isLoading={isLoading}
                 onSend={sendMessage}
-                onImageSelect={handleImageSelect}
-                onRemoveImage={removeSelectedImage}
-                fileInputRef={fileInputRef}
                 variant="default"
               />
             </div>
@@ -491,12 +445,8 @@ const ChatInterface = ({ showDashboard = true }) => {
 const EmptyState = ({
   inputValue,
   setInputValue,
-  selectedImage,
   isLoading,
-  onSend,
-  onImageSelect,
-  onRemoveImage,
-  fileInputRef
+  onSend
 }) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
@@ -540,12 +490,8 @@ const EmptyState = ({
         <ChatInput
           inputValue={inputValue}
           setInputValue={setInputValue}
-          selectedImage={selectedImage}
           isLoading={isLoading}
           onSend={onSend}
-          onImageSelect={onImageSelect}
-          onRemoveImage={onRemoveImage}
-          fileInputRef={fileInputRef}
           variant="floating"
         />
       </div>
