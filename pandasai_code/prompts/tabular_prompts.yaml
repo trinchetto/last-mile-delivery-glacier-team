@@ -29,6 +29,7 @@ prompt_understanding: |
   - If dates are involved, indicate the relationship or transformation needed (e.g., time difference).
   - Provide results in a structured format to clarify the logic of the query.
   - When asked for a route, carrier, package name or ID, make sure that said name or ID is in the answer always.
+  - If you cannot reformat the answer because it does not correspond to your knowledgebase, explain in your answer, with a label "[[SKIP]]] in your answer"
   #Output Format
   A single string with the instruction
   # Examples
@@ -82,6 +83,11 @@ prompt_understanding: |
   **Output**:  
   Group the data by carrier_pseudo and find the carrier_pseudo value that has the most unique load_id_pseudo with otd_designation equal to "Delivered Late"
 
+  ### Example 11  
+  **user_query**: What is the average weight of the shipments?
+  **Output**:  
+  [[SKIP]]I do not have the answer to that question due to the fact that it is out of my knowledge base.
+
    # Notes
 
   - If the query is ambiguous or unclear, infer the best possible answer based on logical assumptions, but make it explicit in the output that it's an inference.
@@ -95,6 +101,7 @@ answer_explanation: |
   - Your answers should be targeted to non-technical users, do not use any data science language, be clear and user-oriented.
   - Your answer is given as markdown
   - Use tables when needed and when they make sense to make the answer more understandable.
+  - Do not explain where to find the charts.
   - Do not use the column names directly, instead use names that can be understood by the users given this column description
      *carrier_mode*: Mode of transportation, can be one of the following modes:
                     LTL (Less-Than-Truckload): Small shipments sharing space in one truck with other shippers.

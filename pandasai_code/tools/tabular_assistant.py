@@ -151,7 +151,10 @@ class TabularAssistant:
 
         self.answer_explainer_chain=explainer_template| lite_llm | StrOutputParser()
 
-
+    def _skip_search(self,analized_prompt):
+        if "[[SKIP]]" in analized_prompt:
+            return True
+        return False
     def _create_promp_analyst(self,
                         open_router_key,
                         analyst_temperature=0.3,
@@ -170,6 +173,18 @@ class TabularAssistant:
             ]
         )
         self.prompt_analyst_chain=analyst_template| lite_llm | StrOutputParser()
+
+    def is_image_generated(self,reply):
+        """
+        Returns the image path/value if an image (chart) was generated,
+        otherwise returns None.
+        """
+        
+        
+        if isinstance(reply, dict) and reply.get("type") == "chart":
+            return reply.get("value")
+
+        return None
 
     def run(self, user_query: str):
         """
@@ -198,6 +213,15 @@ class TabularAssistant:
         analyzed_prompt=self.prompt_analyst_chain.invoke(input={
                                                 "user_query":user_query
                                                 })
+        #Check if the system has the knowledge to answer this question.
+        if self._skip_search(analyzed_prompt):
+            output_dict={"prompt_analysis":analyzed_prompt,
+                "output":"",
+                "code_executed":"",
+                "explanation":"Seems that the question you asked is outside my knowledge base. Can you rephrase it or try another question?",
+                "image_path":None}
+            return output_dict
+            
         
         analyzed_prompt+="\n\n If you are going to operate on dates, Remember that Date columns are stored as VARCHAR in the format YYYY-MM-DD HH:MM:SS"
         reply_pandas=self.df.chat(analyzed_prompt)
@@ -215,9 +239,11 @@ class TabularAssistant:
 
         })
 
+        image_value=self.is_image_generated(reply_pandas.__dict__)
         output_dict={"prompt_analysis":analyzed_prompt,
                      "output":reply_md,
                      "code_executed":code_executed,
-                     "explanation":output_explained}
-
+                     "explanation":output_explained,
+                     "image_path":image_value}
+        
         return output_dict
