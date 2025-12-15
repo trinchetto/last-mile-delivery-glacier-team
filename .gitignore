@@ -24,6 +24,9 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+pandasai_code/datasets
+pandasai_code/exports
+pandasai_code/pandasai.log
 MANIFEST
 
 # PyInstaller
