@@ -13,7 +13,7 @@ models={
 
 temperatures={
     "analyst_temperature":0.3,
-    "prompt2pandas_temperature":0.3
+    "prompt2pandas_temperature":0.5
 }
 
 cool_print("Initializing tabular tool ....", color="yellow")
@@ -27,12 +27,24 @@ my_tab_assistant=TabularAssistant(
 
 cool_print("..... done!",color="bright_yellow")
 
-prompt_in=""
-while prompt_in!="END":
+prompt_in="x"
+while prompt_in!="END" and prompt_in!="" and prompt_in!="n":
     prompt_in=input("Write a question to the data assistant > ")
-    if prompt_in!="END" and prompt_in!="":
+    if prompt_in!="END" and prompt_in!="" and prompt_in!="n" and prompt_in!="x":
         reply=my_tab_assistant.run(
             user_query=prompt_in
         )
-    cool_print(reply,color="cyan")
-    cool_print("=============================",color="cyan")
+
+        cool_print("=============================================",color="cyan")
+        cool_print("ANSWER to the user:",color="cyan")
+        cool_print(reply["explanation"],color="cyan")
+        cool_print("-----------",color="cyan")
+        ask_e=input("Do you want to see the processing logic for this answer? y/n ")
+        if ask_e=="y":
+            cool_print("Question as understood by a DS:",color="yellow")
+            cool_print(reply["prompt_analysis"],color="yellow")
+            cool_print("-----------",color="yellow")
+            cool_print("Executed code:",color="bright_yellow")
+            cool_print(reply["code_executed"],color="bright_yellow")
+            cool_print("Raw results:",color="bright_yellow")
+            cool_print(reply["output"],color="bright_yellow")

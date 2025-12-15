@@ -59,6 +59,11 @@ class TabularAssistant:
                         analyst_temperature=analyst_temperature,
                         analyst_model=analyst_model,
                         )
+        self._create_answer_explainer(
+                open_router_key=open_router_key,
+                analyst_temperature=analyst_temperature,
+                analyst_model=analyst_model,
+                )
         
         self._create_tabular_bot(
                     data_path=data_path,
@@ -95,7 +100,7 @@ class TabularAssistant:
                         "save_charts": True,
                         "open_charts": True,
                         "enable_cache": False,
-                        "verbose": True,
+                        "verbose": False,
                     }
                 )
 
@@ -118,7 +123,7 @@ class TabularAssistant:
         
 
 
-    def _create_promp_analyst(
+    def _create_answer_explainer(
                             self,
                             open_router_key,
                             analyst_temperature=0.3,
@@ -131,19 +136,40 @@ class TabularAssistant:
                     temperature=analyst_temperature,
                 )
         
+        system_msg=load_prompt("./prompts/tabular_prompts.yaml","answer_explanation")
+
+        explainer_template = ChatPromptTemplate.from_messages(
+            [
+                SystemMessagePromptTemplate.from_template(system_msg),
+                HumanMessagePromptTemplate.from_template(
+                                "**user_question**:\n{user_question}\n\n"
+                                "**output**:\n{output}\n\n"
+                                "**code_executed**:\n{code_executed}"
+                                ),
+            ]
+        )
+
+        self.answer_explainer_chain=explainer_template| lite_llm | StrOutputParser()
+
+
+    def _create_promp_analyst(self,
+                        open_router_key,
+                        analyst_temperature=0.3,
+                        analyst_model="openrouter/openai/gpt-4o-mini"):
+        lite_llm=ChatLiteLLM(
+                    model=analyst_model,
+                    api_key=open_router_key,
+                    temperature=analyst_temperature,
+                )
         system_msg=load_prompt("./prompts/tabular_prompts.yaml","prompt_understanding")
-
-
+        
         analyst_template = ChatPromptTemplate.from_messages(
             [
                 SystemMessagePromptTemplate.from_template(system_msg),
                 HumanMessagePromptTemplate.from_template("**user_query**: {user_query}"),
             ]
         )
-
         self.prompt_analyst_chain=analyst_template| lite_llm | StrOutputParser()
-
-
 
     def run(self, user_query: str):
         """
@@ -168,13 +194,30 @@ class TabularAssistant:
             This may be a textual explanation, a computed value,
             or a structured result derived from the data.
         """
-        analized_prompt=self.prompt_analyst_chain.invoke(input={
+        
+        analyzed_prompt=self.prompt_analyst_chain.invoke(input={
                                                 "user_query":user_query
                                                 })
         
-        
-        reply=self.df.chat(analized_prompt)
-        output_dict={"prompt_analysis":analized_prompt,
-                     "output":str(reply)}
-        
-        return str(output_dict)
+        analyzed_prompt+="\n\n If you are going to operate on dates, Remember that Date columns are stored as VARCHAR in the format YYYY-MM-DD HH:MM:SS"
+        reply_pandas=self.df.chat(analyzed_prompt)
+        code_executed=reply_pandas.last_code_executed
+        if isinstance(reply_pandas, pai.core.response.dataframe.DataFrameResponse):
+            reply_md=reply_pandas.value.to_markdown(index=False, tablefmt="github")
+        else:
+            reply_str=str(reply_pandas)
+            reply_md=str(f"**{reply_str}**")
+
+        output_explained=self.answer_explainer_chain.invoke(input={
+                                        "user_question":user_query,
+                                        "code_executed":code_executed,
+                                        "output":reply_md,
+
+        })
+
+        output_dict={"prompt_analysis":analyzed_prompt,
+                     "output":reply_md,
+                     "code_executed":code_executed,
+                     "explanation":output_explained}
+
+        return output_dict
