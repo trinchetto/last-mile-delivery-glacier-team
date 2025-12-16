@@ -236,10 +236,10 @@ const DeveloperPage = () => {
                         <div className="mb-8 bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-xl p-6">
                             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                                 <Key className="text-primary-400" size={20} />
-                                OpenRouter API Key
+                                Anthropic API Key
                             </h2>
                             <p className="text-sm text-slate-400 mb-4">
-                                Enter your OpenRouter API key to use the AI assistant features. Your key is stored securely in your browser's local storage and is never sent to our servers or stored in the codebase.
+                                Enter your Anthropic API key to use the AI assistant features. Your key is stored securely in your browser's local storage and is never sent to our servers or stored in the codebase.
                             </p>
                             <div className="space-y-4">
                                 <div className="relative">
@@ -247,7 +247,7 @@ const DeveloperPage = () => {
                                         type={showApiKey ? 'text' : 'password'}
                                         value={apiKey}
                                         onChange={(e) => setApiKey(e.target.value)}
-                                        placeholder="sk-or-v1-..."
+                                        placeholder="sk-ant-api03-..."
                                         className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 pr-12 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 font-mono text-sm"
                                     />
                                     <button
@@ -399,7 +399,7 @@ const DeveloperPage = () => {
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-primary-400 mt-1">•</span>
-                                    <span>Get your OpenRouter API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline">openrouter.ai/keys</a></span>
+                                    <span>Get your Anthropic API key from <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline">console.anthropic.com</a></span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-primary-400 mt-1">•</span>

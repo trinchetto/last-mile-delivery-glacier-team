@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Store the original API key from environment
-ORIGINAL_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+ORIGINAL_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Import the graph builder and compile with checkpointer
 from graph import build_delivery_graph
@@ -567,12 +567,12 @@ async def health():
 @app.post("/test-api-key")
 async def test_api_key(raw_request: Request):
     """
-    Test if the provided OpenRouter API key is valid by making a minimal API call using litellm.
+    Test if the provided Anthropic API key is valid by making a minimal API call.
     """
-    from litellm import completion
+    import anthropic
     
     api_key = raw_request.headers.get("X-API-Key")
-    model = raw_request.headers.get("X-Model", "gpt-4o-mini")
+    model = raw_request.headers.get("X-Model", "claude-sonnet-4-5-20250929")
     
     if not api_key:
         # Check if server has a default key
@@ -581,45 +581,31 @@ async def test_api_key(raw_request: Request):
         else:
             return {"valid": False, "error": "No API key provided and no server default configured"}
     
-    # Map model names to OpenRouter format (openrouter/provider/model)
-    model_mapping = {
-        "claude-sonnet-4-5-20250929": "openrouter/anthropic/claude-sonnet-4-5-20250929",
-        "claude-sonnet-4-20250514": "openrouter/anthropic/claude-sonnet-4-20250514",
-        "claude-3-5-sonnet-20241022": "openrouter/anthropic/claude-3.5-sonnet",
-        "claude-3-5-haiku-20241022": "openrouter/anthropic/claude-3.5-haiku",
-        "gpt-4o": "openrouter/openai/gpt-4o",
-        "gpt-4o-mini": "openrouter/openai/gpt-4o-mini",
-    }
-    litellm_model = model_mapping.get(model, f"openrouter/{model}")
-    
     try:
-        # Test the API key with a minimal request using litellm
-        response = completion(
-            model=litellm_model,
-            api_key=api_key,
+        # Test the API key with a minimal request
+        client = anthropic.Anthropic(api_key=api_key)
+        
+        # Make a minimal API call to verify the key
+        response = client.messages.create(
+            model=model,
             max_tokens=10,
             messages=[{"role": "user", "content": "Say 'OK'"}]
         )
         
-        response_text = response.choices[0].message.content if response.choices else "OK"
-        
         return {
             "valid": True,
-            "model": litellm_model,
-            "message": f"API key is valid! Connected to {litellm_model}",
-            "response": response_text
+            "model": model,
+            "message": f"API key is valid! Connected to {model}",
+            "response": response.content[0].text if response.content else "OK"
         }
-            
+    except anthropic.AuthenticationError:
+        return {"valid": False, "error": "Invalid API key - authentication failed"}
+    except anthropic.NotFoundError:
+        return {"valid": False, "error": f"Model '{model}' not found - try a different model"}
+    except anthropic.RateLimitError:
+        return {"valid": True, "model": model, "message": "API key is valid (rate limited, but authenticated)"}
     except Exception as e:
-        error_str = str(e)
-        if "401" in error_str or "Unauthorized" in error_str or "AuthenticationError" in error_str:
-            return {"valid": False, "error": "Invalid API key - authentication failed"}
-        elif "404" in error_str or "NotFoundError" in error_str:
-            return {"valid": False, "error": f"Model '{litellm_model}' not found - try a different model"}
-        elif "429" in error_str or "RateLimitError" in error_str:
-            return {"valid": True, "model": litellm_model, "message": "API key is valid (rate limited, but authenticated)"}
-        else:
-            return {"valid": False, "error": f"Connection error: {error_str}"}
+        return {"valid": False, "error": f"Connection error: {str(e)}"}
 
 
 if __name__ == "__main__":
