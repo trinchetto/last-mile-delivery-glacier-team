@@ -28,9 +28,22 @@ cleanup() {
 # Trap SIGINT (Ctrl+C) and SIGTERM
 trap cleanup SIGINT SIGTERM
 
+# Install Backend Dependencies if needed
+echo -e "${BLUE}📦 Checking backend dependencies...${NC}"
+cd backend
+
+# Check if langchain_core is installed (key dependency)
+if ! python3 -c "import langchain_core" 2>/dev/null; then
+    echo -e "${BLUE}📦 Installing backend dependencies (this may take a few minutes)...${NC}"
+    pip3 install -r requirements.txt
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}⚠️  Failed to install dependencies. Trying with --user flag...${NC}"
+        pip3 install --user -r requirements.txt
+    fi
+fi
+
 # Start Backend
 echo -e "${BLUE}🔧 Starting Backend Server...${NC}"
-cd backend
 python3 server.py &
 BACKEND_PID=$!
 cd ..
