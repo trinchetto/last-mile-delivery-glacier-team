@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Store the original API key from environment
-ORIGINAL_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+ORIGINAL_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 # Import the graph builder and compile with checkpointer
 from graph import build_delivery_graph
@@ -567,10 +567,12 @@ async def health():
 @app.post("/test-api-key")
 async def test_api_key(raw_request: Request):
     """
-    Test if the provided API key is valid by making a minimal API call.
+    Test if the provided OpenRouter API key is valid by making a minimal API call.
     """
+    import httpx
+    
     api_key = raw_request.headers.get("X-API-Key")
-    model = raw_request.headers.get("X-Model", "claude-sonnet-4-5-20250929")
+    model = raw_request.headers.get("X-Model", "anthropic/claude-sonnet-4-5-20250929")
     
     if not api_key:
         # Check if server has a default key
@@ -579,30 +581,56 @@ async def test_api_key(raw_request: Request):
         else:
             return {"valid": False, "error": "No API key provided and no server default configured"}
     
+    # Map simple model names to OpenRouter format if needed
+    model_mapping = {
+        "claude-sonnet-4-5-20250929": "anthropic/claude-sonnet-4-5-20250929",
+        "claude-sonnet-4-20250514": "anthropic/claude-sonnet-4-20250514",
+        "claude-3-5-sonnet-20241022": "anthropic/claude-3.5-sonnet",
+        "claude-3-5-haiku-20241022": "anthropic/claude-3.5-haiku",
+        "gpt-4o": "openai/gpt-4o",
+        "gpt-4o-mini": "openai/gpt-4o-mini",
+    }
+    openrouter_model = model_mapping.get(model, model)
+    
     try:
-        # Test the API key with a minimal request
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
+        # Test the API key with a minimal request to OpenRouter
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://deliveryiq.app",
+                    "X-Title": "DeliveryIQ"
+                },
+                json={
+                    "model": openrouter_model,
+                    "max_tokens": 10,
+                    "messages": [{"role": "user", "content": "Say 'OK'"}]
+                },
+                timeout=30.0
+            )
         
-        # Make a minimal API call to verify the key
-        response = client.messages.create(
-            model=model,
-            max_tokens=10,
-            messages=[{"role": "user", "content": "Say 'OK'"}]
-        )
-        
-        return {
-            "valid": True,
-            "model": model,
-            "message": f"API key is valid! Connected to {model}",
-            "response": response.content[0].text if response.content else "OK"
-        }
-    except anthropic.AuthenticationError:
-        return {"valid": False, "error": "Invalid API key - authentication failed"}
-    except anthropic.NotFoundError:
-        return {"valid": False, "error": f"Model '{model}' not found - try a different model"}
-    except anthropic.RateLimitError:
-        return {"valid": True, "model": model, "message": "API key is valid (rate limited, but authenticated)"}
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "valid": True,
+                "model": openrouter_model,
+                "message": f"API key is valid! Connected to {openrouter_model}",
+                "response": data.get("choices", [{}])[0].get("message", {}).get("content", "OK")
+            }
+        elif response.status_code == 401:
+            return {"valid": False, "error": "Invalid API key - authentication failed"}
+        elif response.status_code == 404:
+            return {"valid": False, "error": f"Model '{openrouter_model}' not found - try a different model"}
+        elif response.status_code == 429:
+            return {"valid": True, "model": openrouter_model, "message": "API key is valid (rate limited, but authenticated)"}
+        else:
+            error_detail = response.json().get("error", {}).get("message", response.text)
+            return {"valid": False, "error": f"API error ({response.status_code}): {error_detail}"}
+            
+    except httpx.TimeoutException:
+        return {"valid": False, "error": "Connection timeout - please try again"}
     except Exception as e:
         return {"valid": False, "error": f"Connection error: {str(e)}"}
 
