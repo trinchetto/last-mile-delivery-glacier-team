@@ -12,6 +12,32 @@ const log = {
   error: (msg, err) => console.error(`[Error] ${msg}:`, err),
 };
 
+/**
+ * Get stored API settings from localStorage
+ */
+const getApiSettings = () => {
+  const apiKey = localStorage.getItem('deliveryiq_api_key') || '';
+  const model = localStorage.getItem('deliveryiq_model') || 'claude-sonnet-4-5-20250929';
+  return { apiKey, model };
+};
+
+/**
+ * Build headers including API key if available
+ */
+const buildHeaders = () => {
+  const headers = { 'Content-Type': 'application/json' };
+  const { apiKey, model } = getApiSettings();
+  
+  if (apiKey) {
+    headers['X-API-Key'] = apiKey;
+  }
+  if (model) {
+    headers['X-Model'] = model;
+  }
+  
+  return headers;
+};
+
 export const generateThreadId = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -217,15 +243,17 @@ async function processMessageStream(response, onStreamCallback) {
  */
 export async function startAnalysis(input, threadId, onStreamCallback) {
   log.state(`Starting analysis for thread ${threadId}`);
+  const { model } = getApiSettings();
 
   const response = await fetch(`${LANGGRAPH_API_URL}/threads/${threadId}/runs/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: buildHeaders(),
     body: JSON.stringify({
       assistant_id: ASSISTANT_ID,
       input: { user_query: input.user_query || '' },
       stream_mode: 'messages',
       if_not_exists: 'create',
+      config: { configurable: { model } },
     }),
   });
 
@@ -238,6 +266,7 @@ export async function startAnalysis(input, threadId, onStreamCallback) {
  */
 export async function sendChatMessage(threadId, message, imageData, onStreamCallback) {
   log.state(`Chat message to thread ${threadId}`);
+  const { model } = getApiSettings();
 
   let resumeContent = message;
   if (imageData) {
@@ -249,11 +278,12 @@ export async function sendChatMessage(threadId, message, imageData, onStreamCall
 
   const response = await fetch(`${LANGGRAPH_API_URL}/threads/${threadId}/runs/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: buildHeaders(),
     body: JSON.stringify({
       assistant_id: ASSISTANT_ID,
       command: { resume: resumeContent },
       stream_mode: 'messages',
+      config: { configurable: { model } },
     }),
   });
 

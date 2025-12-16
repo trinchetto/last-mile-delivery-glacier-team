@@ -10,7 +10,7 @@ import uuid
 from typing import Optional, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -18,6 +18,9 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Store the original API key from environment
+ORIGINAL_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Import the graph builder and compile with checkpointer
 from graph import build_delivery_graph
@@ -89,21 +92,60 @@ class RunRequest(BaseModel):
     command: Optional[dict] = None
     stream_mode: Optional[str | list] = "messages"
     if_not_exists: Optional[str] = "create"
+    config: Optional[dict] = None
 
 
 class ThreadCreate(BaseModel):
     thread_id: Optional[str] = None
 
 
+def set_api_key_from_header(api_key: str | None) -> str | None:
+    """
+    Temporarily set the API key from request header.
+    Returns the previous API key so it can be restored.
+    """
+    previous_key = os.environ.get("ANTHROPIC_API_KEY")
+    if api_key:
+        os.environ["ANTHROPIC_API_KEY"] = api_key
+        print(f"[Server] Using API key from request header (ends with ...{api_key[-4:]})")
+    return previous_key
+
+
+def restore_api_key(previous_key: str | None):
+    """Restore the original API key."""
+    if previous_key:
+        os.environ["ANTHROPIC_API_KEY"] = previous_key
+    elif ORIGINAL_API_KEY:
+        os.environ["ANTHROPIC_API_KEY"] = ORIGINAL_API_KEY
+
+
 @app.post("/threads/{thread_id}/runs/stream")
-async def stream_run(thread_id: str, request: RunRequest):
+async def stream_run(thread_id: str, request: RunRequest, raw_request: Request):
     """
     Stream a graph run with SSE events.
     Supports both initial runs (with input) and resume (with command).
+    Accepts optional X-API-Key header for runtime API key configuration.
     """
+    # Extract API key from header if provided
+    api_key_from_header = raw_request.headers.get("X-API-Key")
+    model_from_header = raw_request.headers.get("X-Model")
+    
+    # Set API key from header if provided
+    previous_api_key = set_api_key_from_header(api_key_from_header)
 
     async def event_generator():
-        config = {"configurable": {"thread_id": thread_id}}
+        # Build config with model from request body or header
+        configurable = {"thread_id": thread_id}
+        
+        # Get model from request config or header
+        if request.config and request.config.get("configurable", {}).get("model"):
+            configurable["model"] = request.config["configurable"]["model"]
+            print(f"[Server] Using model from request: {configurable['model']}")
+        elif model_from_header:
+            configurable["model"] = model_from_header
+            print(f"[Server] Using model from header: {model_from_header}")
+        
+        config = {"configurable": configurable}
 
         try:
             # Determine if this is a new run or a resume
@@ -520,6 +562,49 @@ async def get_thread_state(thread_id: str):
 async def health():
     """Health check endpoint."""
     return {"status": "ok"}
+
+
+@app.post("/test-api-key")
+async def test_api_key(raw_request: Request):
+    """
+    Test if the provided API key is valid by making a minimal API call.
+    """
+    api_key = raw_request.headers.get("X-API-Key")
+    model = raw_request.headers.get("X-Model", "claude-sonnet-4-5-20250929")
+    
+    if not api_key:
+        # Check if server has a default key
+        if ORIGINAL_API_KEY:
+            api_key = ORIGINAL_API_KEY
+        else:
+            return {"valid": False, "error": "No API key provided and no server default configured"}
+    
+    try:
+        # Test the API key with a minimal request
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        
+        # Make a minimal API call to verify the key
+        response = client.messages.create(
+            model=model,
+            max_tokens=10,
+            messages=[{"role": "user", "content": "Say 'OK'"}]
+        )
+        
+        return {
+            "valid": True,
+            "model": model,
+            "message": f"API key is valid! Connected to {model}",
+            "response": response.content[0].text if response.content else "OK"
+        }
+    except anthropic.AuthenticationError:
+        return {"valid": False, "error": "Invalid API key - authentication failed"}
+    except anthropic.NotFoundError:
+        return {"valid": False, "error": f"Model '{model}' not found - try a different model"}
+    except anthropic.RateLimitError:
+        return {"valid": True, "model": model, "message": "API key is valid (rate limited, but authenticated)"}
+    except Exception as e:
+        return {"valid": False, "error": f"Connection error: {str(e)}"}
 
 
 if __name__ == "__main__":
