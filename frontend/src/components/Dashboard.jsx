@@ -32,7 +32,7 @@ const Dashboard = ({
     if (!hasAnalyzed || !analysisResult) {
         return (
             <div className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
-                <div className="text-center max-w-md">
+                <div className="text-center max-w-lg">
                     <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-purple/20 border border-white/10 flex items-center justify-center">
                         <Package size={40} className="text-primary-400" />
                     </div>
@@ -42,6 +42,24 @@ const Dashboard = ({
                     <p className="text-slate-400 mb-8">
                         AI-Powered Delivery Risk Advisor. Select a lane and carrier to unlock <span className="text-primary-400 font-medium">predictive insights</span>.
                     </p>
+                    
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-3 mb-8">
+                        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                            <div className="text-2xl font-bold text-white">73K+</div>
+                            <div className="text-xs text-slate-400">Shipments Analyzed</div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
+                            <div className="text-2xl font-bold text-red-400">19.2%</div>
+                            <div className="text-xs text-slate-400">Overall Late Rate</div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                            <div className="text-2xl font-bold text-white">970</div>
+                            <div className="text-xs text-slate-400">Unique Lanes</div>
+                        </div>
+                    </div>
+
+                    {/* Risk Levels Legend */}
                     <div className="grid grid-cols-3 gap-3">
                         <div className="p-3 rounded-xl bg-slate-800/50 border border-white/5">
                             <div className="text-xl font-bold text-green-400">Low</div>

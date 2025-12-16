@@ -342,26 +342,6 @@ const Sidebar = ({
                     </>
                 )}
 
-                {/* Quick Stats */}
-                {!isMinimized && (
-                    <div className="mt-6">
-                        <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Quick Stats</div>
-                        <div className="space-y-2">
-                            <div className="p-3 rounded-lg bg-slate-700/30 border border-slate-600/50">
-                                <div className="text-2xl font-bold text-white">73K+</div>
-                                <div className="text-xs text-slate-400">Shipments Analyzed</div>
-                            </div>
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-                                <div className="text-2xl font-bold text-red-400">19.2%</div>
-                                <div className="text-xs text-slate-400">Overall Late Rate</div>
-                            </div>
-                            <div className="p-3 rounded-lg bg-slate-700/30 border border-slate-600/50">
-                                <div className="text-2xl font-bold text-white">970</div>
-                                <div className="text-xs text-slate-400">Unique Lanes</div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
 
             {/* User Profile */}
