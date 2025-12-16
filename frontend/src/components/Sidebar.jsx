@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Truck, Package, Settings, BarChart2, Zap, Search, MapPin, Calendar, MessageSquare, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Truck, Package, Settings, BarChart2, Zap, Search, MapPin, Calendar, MessageSquare, Plus, ChevronLeft, ChevronRight, Code } from 'lucide-react';
 import { lanes, carriers } from '../data/mockData';
 
 const Sidebar = ({
@@ -257,6 +257,16 @@ const Sidebar = ({
                                 >
                                     <BarChart2 size={20} />
                                 </button>
+                                <button
+                                    onClick={() => setActiveView('developer')}
+                                    className={`w-full flex items-center justify-center p-3 rounded-xl transition-all duration-200 ${activeView === 'developer'
+                                            ? 'text-primary-400 bg-primary-500/10 border border-primary-500/20'
+                                            : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                                        }`}
+                                    title="Developer"
+                                >
+                                    <Code size={20} />
+                                </button>
                             </>
                         )}
                     </nav>
@@ -315,6 +325,16 @@ const Sidebar = ({
                                     >
                                         <BarChart2 size={20} />
                                         <span>Analytics</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveView('developer')}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${activeView === 'developer'
+                                                ? 'text-primary-400 bg-primary-500/10 border border-primary-500/20 shadow-lg shadow-primary-500/5'
+                                                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <Code size={20} />
+                                        <span>Developer</span>
                                     </button>
                                 </nav>
                             </>
