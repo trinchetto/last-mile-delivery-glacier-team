@@ -567,12 +567,12 @@ async def health():
 @app.post("/test-api-key")
 async def test_api_key(raw_request: Request):
     """
-    Test if the provided OpenRouter API key is valid by making a minimal API call.
+    Test if the provided OpenRouter API key is valid by making a minimal API call using litellm.
     """
-    import httpx
+    from litellm import completion
     
     api_key = raw_request.headers.get("X-API-Key")
-    model = raw_request.headers.get("X-Model", "anthropic/claude-sonnet-4-5-20250929")
+    model = raw_request.headers.get("X-Model", "gpt-4o-mini")
     
     if not api_key:
         # Check if server has a default key
@@ -581,58 +581,45 @@ async def test_api_key(raw_request: Request):
         else:
             return {"valid": False, "error": "No API key provided and no server default configured"}
     
-    # Map simple model names to OpenRouter format if needed
+    # Map model names to OpenRouter format (openrouter/provider/model)
     model_mapping = {
-        "claude-sonnet-4-5-20250929": "anthropic/claude-sonnet-4-5-20250929",
-        "claude-sonnet-4-20250514": "anthropic/claude-sonnet-4-20250514",
-        "claude-3-5-sonnet-20241022": "anthropic/claude-3.5-sonnet",
-        "claude-3-5-haiku-20241022": "anthropic/claude-3.5-haiku",
-        "gpt-4o": "openai/gpt-4o",
-        "gpt-4o-mini": "openai/gpt-4o-mini",
+        "claude-sonnet-4-5-20250929": "openrouter/anthropic/claude-sonnet-4-5-20250929",
+        "claude-sonnet-4-20250514": "openrouter/anthropic/claude-sonnet-4-20250514",
+        "claude-3-5-sonnet-20241022": "openrouter/anthropic/claude-3.5-sonnet",
+        "claude-3-5-haiku-20241022": "openrouter/anthropic/claude-3.5-haiku",
+        "gpt-4o": "openrouter/openai/gpt-4o",
+        "gpt-4o-mini": "openrouter/openai/gpt-4o-mini",
     }
-    openrouter_model = model_mapping.get(model, model)
+    litellm_model = model_mapping.get(model, f"openrouter/{model}")
     
     try:
-        # Test the API key with a minimal request to OpenRouter
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://deliveryiq.app",
-                    "X-Title": "DeliveryIQ"
-                },
-                json={
-                    "model": openrouter_model,
-                    "max_tokens": 10,
-                    "messages": [{"role": "user", "content": "Say 'OK'"}]
-                },
-                timeout=30.0
-            )
+        # Test the API key with a minimal request using litellm
+        response = completion(
+            model=litellm_model,
+            api_key=api_key,
+            max_tokens=10,
+            messages=[{"role": "user", "content": "Say 'OK'"}]
+        )
         
-        if response.status_code == 200:
-            data = response.json()
-            return {
-                "valid": True,
-                "model": openrouter_model,
-                "message": f"API key is valid! Connected to {openrouter_model}",
-                "response": data.get("choices", [{}])[0].get("message", {}).get("content", "OK")
-            }
-        elif response.status_code == 401:
-            return {"valid": False, "error": "Invalid API key - authentication failed"}
-        elif response.status_code == 404:
-            return {"valid": False, "error": f"Model '{openrouter_model}' not found - try a different model"}
-        elif response.status_code == 429:
-            return {"valid": True, "model": openrouter_model, "message": "API key is valid (rate limited, but authenticated)"}
-        else:
-            error_detail = response.json().get("error", {}).get("message", response.text)
-            return {"valid": False, "error": f"API error ({response.status_code}): {error_detail}"}
+        response_text = response.choices[0].message.content if response.choices else "OK"
+        
+        return {
+            "valid": True,
+            "model": litellm_model,
+            "message": f"API key is valid! Connected to {litellm_model}",
+            "response": response_text
+        }
             
-    except httpx.TimeoutException:
-        return {"valid": False, "error": "Connection timeout - please try again"}
     except Exception as e:
-        return {"valid": False, "error": f"Connection error: {str(e)}"}
+        error_str = str(e)
+        if "401" in error_str or "Unauthorized" in error_str or "AuthenticationError" in error_str:
+            return {"valid": False, "error": "Invalid API key - authentication failed"}
+        elif "404" in error_str or "NotFoundError" in error_str:
+            return {"valid": False, "error": f"Model '{litellm_model}' not found - try a different model"}
+        elif "429" in error_str or "RateLimitError" in error_str:
+            return {"valid": True, "model": litellm_model, "message": "API key is valid (rate limited, but authenticated)"}
+        else:
+            return {"valid": False, "error": f"Connection error: {error_str}"}
 
 
 if __name__ == "__main__":
