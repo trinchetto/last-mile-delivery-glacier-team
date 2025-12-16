@@ -30,8 +30,8 @@ def get_assistant() -> TabularAssistant:
         if llm_provider == "anthropic":
             api_key = os.getenv("ANTHROPIC_API_KEY")
             models = {
-                "analyst_model": "claude-sonnet-4-20250514",
-                "prompt2pandas_model": "claude-sonnet-4-20250514"
+                "analyst_model": "claude-sonnet-4-5-20250929",
+                "prompt2pandas_model": "claude-sonnet-4-5-20250929"
             }
         else:
             api_key = os.getenv("OPENROUTER_API_KEY")

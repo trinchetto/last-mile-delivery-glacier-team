@@ -66,7 +66,7 @@ class TabularAssistant:
             API key for the selected provider
         models : dict
             Model names for analyst and prompt2pandas. Example:
-            {"analyst_model": "claude-sonnet-4-20250514", "prompt2pandas_model": "claude-sonnet-4-20250514"}
+            {"analyst_model": "claude-sonnet-4-5-20250929", "prompt2pandas_model": "claude-sonnet-4-5-20250929"}
         temperatures : dict
             Temperature settings. Example:
             {"analyst_temperature": 0.3, "prompt2pandas_temperature": 0.5}
@@ -82,8 +82,8 @@ class TabularAssistant:
         if models is None:
             if llm_provider == "anthropic":
                 models = {
-                    "analyst_model": "claude-sonnet-4-20250514",
-                    "prompt2pandas_model": "claude-sonnet-4-20250514"
+                    "analyst_model": "claude-sonnet-4-5-20250929",
+                    "prompt2pandas_model": "claude-sonnet-4-5-20250929"
                 }
             else:
                 models = {
