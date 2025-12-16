@@ -10,7 +10,7 @@ from pathlib import Path
 
 from langchain_community.chat_models import ChatLiteLLM
 from langchain_anthropic import ChatAnthropic
-from litellm import LiteLLM
+import litellm
 from langchain_core.prompts import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
@@ -20,9 +20,30 @@ from langchain_core.output_parsers import StrOutputParser
 
 import pandas as pd
 import pandasai as pai
+from pandasai.llm import LLM
 
 # Get the directory where this file is located
 BASE_DIR = Path(__file__).parent.parent
+
+
+class PandasAILiteLLM(LLM):
+    """Custom LiteLLM wrapper for PandasAI."""
+    
+    def __init__(self, model: str, api_key: str = None, temperature: float = 0.5, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+        self.model = model
+        self.temperature = temperature
+        
+    def call(self, instruction, context=None):
+        """Call litellm completion."""
+        messages = [{"role": "user", "content": str(instruction)}]
+        response = litellm.completion(
+            model=self.model,
+            messages=messages,
+            temperature=self.temperature,
+            api_key=self.api_key
+        )
+        return response.choices[0].message.content
 
 
 def load_prompt(yaml_path: str | Path, prompt_id: str) -> str:
@@ -143,14 +164,14 @@ class TabularAssistant:
         """Get PandasAI-compatible LLM based on provider."""
         if self.llm_provider == "anthropic":
             # PandasAI with Anthropic - use LiteLLM with anthropic prefix
-            return LiteLLM(
+            return PandasAILiteLLM(
                 model=f"anthropic/{model}",
                 api_key=self.api_key,
                 temperature=temperature,
             )
         else:
             # OpenRouter
-            return LiteLLM(
+            return PandasAILiteLLM(
                 model=model,
                 api_key=self.api_key,
                 temperature=temperature,
