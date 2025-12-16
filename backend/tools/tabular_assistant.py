@@ -10,7 +10,7 @@ from pathlib import Path
 
 from langchain_community.chat_models import ChatLiteLLM
 from langchain_anthropic import ChatAnthropic
-from pandasai_litellm.litellm import LiteLLM
+from litellm import LiteLLM
 from langchain_core.prompts import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
