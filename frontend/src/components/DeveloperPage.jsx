@@ -853,9 +853,9 @@ const DeveloperPage = () => {
                 </div>
 
                 {/* Tech Stack */}
-                <div>
-                    <h3 className="text-md font-semibold text-slate-200 mb-3">Technology Stack</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="mb-6">
+                    <h3 className="text-md font-semibold text-slate-200 mb-3">Technology Stack Overview</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                         <div className="p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-center">
                             <div className="text-xl mb-1">🦜</div>
                             <div className="text-sm font-medium text-white">LangGraph</div>
@@ -868,13 +868,171 @@ const DeveloperPage = () => {
                         </div>
                         <div className="p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-center">
                             <div className="text-xl mb-1">🐍</div>
-                            <div className="text-sm font-medium text-white">Python</div>
+                            <div className="text-sm font-medium text-white">Python 3.11</div>
                             <div className="text-xs text-slate-500">Backend</div>
                         </div>
                         <div className="p-3 bg-slate-900/50 border border-slate-700 rounded-lg text-center">
                             <div className="text-xl mb-1">📊</div>
                             <div className="text-sm font-medium text-white">Recharts</div>
                             <div className="text-xs text-slate-500">Visualization</div>
+                        </div>
+                    </div>
+
+                    {/* Detailed Tech Stack */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Frontend Stack */}
+                        <div className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
+                            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                                <span className="text-xl">⚛️</span>
+                                Frontend Stack
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Framework</span>
+                                    <span className="text-white font-mono">React 18</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Build Tool</span>
+                                    <span className="text-white font-mono">Vite 7</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Styling</span>
+                                    <span className="text-white font-mono">Tailwind CSS</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Charts</span>
+                                    <span className="text-white font-mono">Recharts</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Icons</span>
+                                    <span className="text-white font-mono">Lucide React</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">State</span>
+                                    <span className="text-white font-mono">React Hooks</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Port</span>
+                                    <span className="text-white font-mono">5173</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Backend Stack */}
+                        <div className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
+                            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                                <span className="text-xl">🐍</span>
+                                Backend Stack
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Runtime</span>
+                                    <span className="text-white font-mono">Python 3.11</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Web Framework</span>
+                                    <span className="text-white font-mono">FastAPI</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Server</span>
+                                    <span className="text-white font-mono">Uvicorn</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Agent Framework</span>
+                                    <span className="text-white font-mono">LangGraph</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">LLM Integration</span>
+                                    <span className="text-white font-mono">LangChain</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">ML Model</span>
+                                    <span className="text-white font-mono">XGBoost</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Data Analysis</span>
+                                    <span className="text-white font-mono">PandasAI</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400">Port</span>
+                                    <span className="text-white font-mono">2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Project Structure */}
+                <div>
+                    <h3 className="text-md font-semibold text-slate-200 mb-3">Project Structure</h3>
+                    <pre className="bg-slate-900/80 border border-slate-700 rounded-lg p-4 text-xs text-slate-300 overflow-x-auto font-mono">
+{`last-mile-delivery-glacier-team/
+├── frontend/                    # React frontend application
+│   ├── src/
+│   │   ├── components/         # React components
+│   │   │   ├── Dashboard.jsx   # Main dashboard view
+│   │   │   ├── ChatInterface.jsx  # Chat UI with AI agent
+│   │   │   ├── DeveloperPage.jsx  # Dev tools & docs (you are here!)
+│   │   │   ├── DatasetTable.jsx   # Data explorer
+│   │   │   └── ...             # Visualization components
+│   │   ├── services/
+│   │   │   └── api.js          # API client for backend
+│   │   ├── App.jsx             # Root component
+│   │   └── main.jsx            # Entry point
+│   ├── package.json            # Dependencies
+│   └── vite.config.js          # Build configuration
+│
+├── backend/                     # Python backend API
+│   ├── agents/                 # LangGraph agent implementations
+│   │   ├── chat/              # Chat agent (router)
+│   │   │   ├── agent.py       # Main chat logic
+│   │   │   └── tools.py       # Chat-specific tools
+│   │   └── analytical/        # Analytical agent (data specialist)
+│   │       ├── agent.py       # Data analysis logic
+│   │       ├── data_tool.py   # PandasAI integration
+│   │       └── tools.py       # Visualization tools
+│   ├── core/
+│   │   ├── config.py          # Configuration management
+│   │   └── configuration.py   # Runtime config
+│   ├── tools/
+│   │   └── tabular_assistant.py  # Custom PandasAI wrapper
+│   ├── data/
+│   │   ├── last-mile-data.csv    # 72K+ shipment records
+│   │   └── carrier_names.json    # Carrier mappings
+│   ├── prompts/
+│   │   └── tabular_prompts.yaml  # LLM system prompts
+│   ├── graph.py               # LangGraph state machine
+│   ├── server.py              # FastAPI application
+│   └── requirements.txt       # Python dependencies
+│
+├── models/                      # ML model artifacts
+│   ├── delivery_risk_model.pkl # Trained XGBoost model
+│   └── model_artifacts.pkl    # Preprocessing pipelines
+│
+├── docs/                        # Documentation
+│   ├── AGENT_FLOW.md          # Agent architecture docs
+│   └── PREDICTION_MODEL.md    # ML model documentation
+│
+├── run_app.sh                  # Start both frontend & backend
+├── stop_app.sh                 # Stop all servers
+└── README.md                   # Project overview`}
+                    </pre>
+                    
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                            <div className="text-sm font-semibold text-blue-400 mb-1">🚀 Start App</div>
+                            <code className="text-xs text-slate-300 font-mono">./run_app.sh</code>
+                            <p className="text-xs text-slate-400 mt-1">Starts both servers</p>
+                        </div>
+                        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <div className="text-sm font-semibold text-red-400 mb-1">🛑 Stop App</div>
+                            <code className="text-xs text-slate-300 font-mono">./stop_app.sh</code>
+                            <p className="text-xs text-slate-400 mt-1">Gracefully stops servers</p>
+                        </div>
+                        <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <div className="text-sm font-semibold text-green-400 mb-1">📦 Dependencies</div>
+                            <code className="text-xs text-slate-300 font-mono">Auto-installed</code>
+                            <p className="text-xs text-slate-400 mt-1">On first run</p>
                         </div>
                     </div>
                 </div>
