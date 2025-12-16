@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   AlertTriangle, Truck, Clock, TrendingUp, MapPin, Calendar, Package,
   Star, ChevronRight, BarChart3, PieChart as PieChartIcon, List, Table2,
@@ -16,6 +16,10 @@ import {
  */
 const AgentDashboard = ({ analysisResult, isAnalyticalWorking = false }) => {
   const [visualizations, setVisualizations] = useState([])
+  const [width, setWidth] = useState(420)
+  const isResizing = useRef(false)
+  const startX = useRef(0)
+  const startWidth = useRef(0)
 
   // Extract visualizations from analysis result
   useEffect(() => {
@@ -24,10 +28,49 @@ const AgentDashboard = ({ analysisResult, isAnalyticalWorking = false }) => {
     }
   }, [analysisResult])
 
+  // Handle resize drag
+  const handleMouseDown = useCallback((e) => {
+    isResizing.current = true
+    startX.current = e.clientX
+    startWidth.current = width
+    document.body.style.cursor = 'ew-resize'
+    document.body.style.userSelect = 'none'
+  }, [width])
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing.current) return
+      const delta = startX.current - e.clientX
+      const newWidth = Math.min(800, Math.max(320, startWidth.current + delta))
+      setWidth(newWidth)
+    }
+
+    const handleMouseUp = () => {
+      isResizing.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
   // Empty state (but not when analytical agent is working)
   if (!isAnalyticalWorking && (!analysisResult || (!visualizations.length && !analysisResult.risk_score))) {
     return (
-      <div className="w-[420px] border-l border-slate-700/50 bg-midnight-900/80 backdrop-blur-xl flex flex-col flex-shrink-0">
+      <div
+        className="border-l border-slate-700/50 bg-midnight-900/80 backdrop-blur-xl flex flex-col flex-shrink-0 relative"
+        style={{ width: `${width}px` }}
+      >
+        {/* Resize handle */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-primary-500/50 transition-colors z-20"
+          onMouseDown={handleMouseDown}
+        />
         <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary-400" />
           <span className="font-semibold text-white text-sm">Analytics Dashboard</span>
@@ -44,12 +87,27 @@ const AgentDashboard = ({ analysisResult, isAnalyticalWorking = false }) => {
   }
 
   return (
-    <div className="w-[420px] border-l border-slate-700/50 bg-midnight-900/80 backdrop-blur-xl flex flex-col flex-shrink-0">
+    <div
+      className="border-l border-slate-700/50 bg-midnight-900/80 backdrop-blur-xl flex flex-col flex-shrink-0 relative"
+      style={{ width: `${width}px` }}
+    >
+      {/* Resize handle */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-primary-500/50 transition-colors z-20"
+        onMouseDown={handleMouseDown}
+      />
       {/* Header */}
       <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary-400" />
           <span className="font-semibold text-white text-sm">Analytics Dashboard</span>
+          {/* Inline spinner when updating existing visualizations */}
+          {isAnalyticalWorking && visualizations.length > 0 && (
+            <>
+              <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />
+              <span className="text-xs text-slate-400">Gathering new...</span>
+            </>
+          )}
         </div>
         {visualizations.length > 0 && (
           <span className="text-xs text-slate-500">{visualizations.length} charts</span>
@@ -58,8 +116,8 @@ const AgentDashboard = ({ analysisResult, isAnalyticalWorking = false }) => {
 
       {/* Content */}
       <div className="flex-1 p-4 overflow-y-auto hide-scrollbar space-y-4 relative">
-        {/* Loading overlay when analytical agent is working */}
-        {isAnalyticalWorking && (
+        {/* Loading overlay only when analytical agent is working AND no existing visualizations */}
+        {isAnalyticalWorking && visualizations.length === 0 && (
           <div className="absolute inset-0 bg-midnight-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
             <Loader2 className="w-8 h-8 text-primary-400 animate-spin mb-3" />
             <span className="text-sm text-slate-300 font-medium">Creating visualizations...</span>
@@ -121,21 +179,35 @@ const COLORS = ['#22c55e', '#3b82f6', '#a855f7', '#eab308', '#ef4444', '#06b6d4'
 
 const PieChartViz = ({ title, data, description }) => (
   <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-    <div className="flex items-center gap-2 mb-3">
+    <div className="flex items-center gap-2 mb-1">
       <PieChartIcon className="w-4 h-4 text-purple-400" />
       <span className="text-xs font-semibold text-slate-400 uppercase">{title}</span>
     </div>
-    <div className="h-40">
+      {/* Legend */}
+    <div className="flex flex-wrap gap-2 mt-2">
+      {data.slice(0, 4).map((item, idx) => (
+        <div key={idx} className="flex items-center gap-1 text-xs">
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: item.color || COLORS[idx % COLORS.length] }}
+          />
+          <span className="text-slate-400">{item.name}</span>
+        </div>
+      ))}
+    </div>
+    <div className="h-60">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={35}
-            outerRadius={55}
+            innerRadius={60}
+            outerRadius={100}
             dataKey="value"
             stroke="none"
+            paddingAngle={3}
+            minAngle={2}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
@@ -148,19 +220,7 @@ const PieChartViz = ({ title, data, description }) => (
         </PieChart>
       </ResponsiveContainer>
     </div>
-    {/* Legend */}
-    <div className="flex flex-wrap gap-2 mt-2">
-      {data.slice(0, 4).map((item, idx) => (
-        <div key={idx} className="flex items-center gap-1 text-xs">
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: item.color || COLORS[idx % COLORS.length] }}
-          />
-          <span className="text-slate-400">{item.name}</span>
-        </div>
-      ))}
-    </div>
-    {description && <p className="text-xs text-slate-500 mt-2">{description}</p>}
+    {description && <p className="text-xs text-slate-500 mt-1">{description}</p>}
   </div>
 )
 

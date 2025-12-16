@@ -233,8 +233,21 @@ async def stream_run(thread_id: str, request: RunRequest):
                 if state and state.next:
                     chat_response = state.values.get("chat_response", "")
 
-                    # Only send complete message if we didn't stream it
-                    if chat_response and not streamed_content:
+                    # Check if chat_response is different from what we streamed (new summary after analytical)
+                    is_new_response = chat_response and chat_response != streamed_content
+
+                    if is_new_response:
+                        # New response (e.g., summary after analytical) - send it
+                        msg_id = f"chat-{thread_id}-summary"
+                        final_msg = {
+                            "type": "ai",
+                            "content": chat_response,
+                            "id": msg_id,
+                        }
+                        print(f"[Server] Sending summary response: {chat_response[:100]}...")
+                        yield f"event: messages/complete\ndata: {json.dumps([final_msg])}\n\n"
+                    elif chat_response and not streamed_content:
+                        # First response that wasn't streamed
                         msg_id = f"chat-{thread_id}-initial"
                         final_msg = {
                             "type": "ai",
@@ -296,6 +309,7 @@ async def stream_run(thread_id: str, request: RunRequest):
 
                 event_count = 0
                 current_node = None  # Track which node is executing
+                streamed_content = ""  # Track what we stream for comparison with final response
 
                 # Use astream_events for token-by-token streaming during resume
                 async for event in compiled_graph.astream_events(
@@ -344,6 +358,7 @@ async def stream_run(thread_id: str, request: RunRequest):
                                     text_content = content
 
                                 if text_content:
+                                    streamed_content += text_content
                                     msg_event = {
                                         "type": "AIMessageChunk",
                                         "content": text_content,
@@ -418,11 +433,24 @@ async def stream_run(thread_id: str, request: RunRequest):
                 state = compiled_graph.get_state(config)
                 if state:
                     print(f"[Server] Final state next: {state.next}")
-                    # Send final message as complete (only if we have content)
                     chat_response = state.values.get("chat_response", "")
-                    if chat_response:
+
+                    # Check if chat_response is different from what we streamed (new summary after analytical)
+                    is_new_response = chat_response and chat_response != streamed_content
+
+                    if is_new_response:
+                        # New response (e.g., summary after analytical) - send it
+                        print(f"[Server] Sending summary response: {chat_response[:100]}...")
+                        msg_id = f"chat-{thread_id}-summary"
+                        final_msg = {
+                            "type": "ai",
+                            "content": chat_response,
+                            "id": msg_id,
+                        }
+                        yield f"event: messages/complete\ndata: {json.dumps([final_msg])}\n\n"
+                    elif chat_response and not streamed_content:
+                        # First response that wasn't streamed
                         print(f"[Server] Chat response length: {len(chat_response)}")
-                        # Use a stable message ID based on thread
                         msg_id = f"chat-{thread_id}-final"
                         final_msg = {
                             "type": "ai",
@@ -430,6 +458,11 @@ async def stream_run(thread_id: str, request: RunRequest):
                             "id": msg_id,
                         }
                         yield f"event: messages/complete\ndata: {json.dumps([final_msg])}\n\n"
+                    elif streamed_content:
+                        # Mark streaming complete
+                        msg_id = f"chat-{thread_id}-complete"
+                        complete_msg = [{"type": "ai", "content": "", "id": msg_id}]
+                        yield f"event: messages/complete\ndata: {json.dumps(complete_msg)}\n\n"
 
                     # Check for updated result and visualizations
                     result = state.values.get("result", {})

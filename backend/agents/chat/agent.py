@@ -2,18 +2,11 @@
 DeliveryIQ Chat Agent
 
 Main conversational agent for the last-mile delivery assistant.
-Handles user queries about delivery risks, lane performance,
-carrier recommendations, and logistics optimization.
-
-Following LangGraph best practices:
-- Uses create_react_agent for tool-based reasoning
-- Receives configuration from graph
-- Returns dict updates (not mutated state)
-- Works with message history
+Uses ReAct pattern with tools - normal responses stream as text,
+only actual tool calls show as tools.
 """
 
 import json
-import re
 from typing import Optional, Sequence
 
 from langchain_openai import ChatOpenAI
@@ -42,105 +35,154 @@ def get_llm(config: Configuration):
         return ChatOpenAI(model=model_name, temperature=temperature, streaming=True)
 
 
-def build_system_prompt(config: Configuration) -> str:
-    """Build the system prompt for the delivery assistant."""
-    base_prompt = getattr(config, 'chat_system_prompt', '')
+SYSTEM_PROMPT = """You are DeliveryIQ, a conversational assistant for last-mile delivery logistics.
 
-    return f"""{base_prompt}
+You have ONE tool: request_data_analysis
+- Use it when users ask about data, metrics, visualizations, or analysis
+- For normal conversation (greetings, explanations, follow-ups), just respond directly
 
-You are DeliveryIQ, the main conversational agent in a multi-agent delivery intelligence system.
-You help logistics professionals analyze delivery risks, optimize routes, evaluate carriers,
-and make data-driven decisions about their supply chain.
+THE ANALYTICAL AGENT (accessed via request_data_analysis) has:
+- Real shipment database with ~70K+ records
+- Data: carrier_name (friendly names like "Swift Freight", "Eagle Logistics"), carrier_mode, actual_transit_days, otd_designation (On-Time/Late/Delivered Early), origin_zip_3d, dest_zip_3d, lane_zip3_pair
+- Visualization tools (charts, graphs, metrics, tables)
+- Always use carrier_name when displaying carrier information.
+- Always use origin_state_name/dest_state_name (not zip codes) when displaying location information, but analyze the stats by zip code.
 
-YOUR TOOLS:
-- **analyze_delivery_risk**: Analyze risk factors for a delivery scenario
-- **get_lane_performance**: Get performance metrics for a specific lane
-- **search_carriers**: Search and compare carriers by criteria
-- **get_carrier_details**: Get detailed information about a carrier
-- **get_delivery_window_recommendation**: Get recommended shipping dates
+IMPORTANT:
+- When you gather data from the analytical agent you provide short info on what has been presented. The user will have access too all the visualizations and numbers.
+- When you use the analytical agent you answer: "I will gather the data and create visualizations...", the user does should be confident that you have access to all the information.
+- Write a short message to the user before calling the analytical agent instead of after.
+- Keep your answers rather short then extensive as the most important data is provided through the visualizations.
+- Use bullet points to present the actions you will perform and to present the data that has been gathered by the analytical agent.
+- Do not write a message directly after you have used the request_data_analysis, wait untill the agent has gathered all the data and sent you a message.
+- Before calling the analytical agent write bullet points to the user.
 
-YOUR COLLEAGUE - THE ANALYTICAL AGENT:
-You work alongside the Analytical Agent, who specializes in creating visualizations
-for the user's dashboard (charts, graphs, metrics, tables). When the user needs to
-SEE or VISUALIZE data, send a message to your colleague using message_analytical_agent.
+WHEN TO USE request_data_analysis:
+- "Show me carrier performance" → Use tool
+- "How many shipments were late?" → Use tool
+- "Compare LTL vs Truckload" → Use tool
+- "What are the best carriers?" → Use tool
 
-Communicate naturally with them - explain what the user needs and suggest what
-visualizations might help. They'll create the appropriate charts and send back a summary.
+WHEN TO RESPOND DIRECTLY (no tool):
+- "Hello" → Just greet them
+- "What can you do?" → Explain your capabilities
+- "Thanks" → Acknowledge
 
-Example interactions:
+DATA SCHEME:
 
-User: "Show me the best carriers"
-You to Analytical Agent: "The user wants to see carrier performance. Please create:
-- A bar chart comparing on-time rates across our top carriers
-- A ranked list of the top 5 carriers with their key metrics
-Focus on FastFreight, EcoLogistics, and Premier Trucking."
+[
+  {
+    "name": "carrier_mode",
+    "type": "string",
+    "description": "Mode of transportation label, can be one of the following modes: LT,Truckload,TL Dry, TL Flatbed"
+  },
+  {
+    "name": "actual_ship",
+    "type": "datetime",
+    "description": "The actual date when the shipment was dispatched. The format is YYYY-mm-dd HH:MM"
+  },
+  {
+    "name": "actual_delivery",
+    "type": "datetime",
+    "description": "The actual date when the shipment was delivered. The format is YYYY-mm-dd HH:MM"
+  },
+  {
+    "name": "customer_distance",
+    "type": "integer",
+    "description": "Distance in miles between origin and destination"
+  },
+  {
+    "name": "all_modes_goal_transit_days",
+    "type": "integer",
+    "description": "Target number of transit days"
+  },
+  {
+    "name": "actual_transit_days",
+    "type": "integer",
+    "description": "Actual number of days taken for the shipment to be delivered"
+  },
+  {
+    "name": "otd_designation",
+    "type": "string",
+    "description": "On-Time Delivery designation. It can be Late, On-Time, Delivered Early"
+  },
+  {
+    "name": "load_id_pseudo",
+    "type": "string",
+    "description": "Shipment ID/Parcel ID/Package ID"
+  },
+  {
+    "name": "carrier_pseudo",
+    "type": "string",
+    "description": "Carrier ID"
+  },
+  {
+    "name": "origin_zip_3d",
+    "type": "string",
+    "description": "Origin zip code in the US. Only the three first numbers are displayed"
+  },
+  {
+    "name": "dest_zip_3d",
+    "type": "string",
+    "description": "Destination zip code in the US. Only the three first numbers are displayed"
+  },
+  {
+    "name": "lane_zip3_pair",
+    "type": "string",
+    "description": "Zip code origin -> Zip code destiny pair."
+  },
+  {
+    "name": "lane_id",
+    "type": "string",
+    "description": "An identifier for the Lane zip pair"
+  },
+  {
+    "name": "carrier_name",
+    "type": "string",
+    "description": "Friendly name for the carrier (e.g., 'Swift Freight', 'Eagle Logistics')"
+  },
+  {
+    "name": "origin_state",
+    "type": "string",
+    "description": "Origin state abbreviation (e.g., 'CA', 'TX', 'NY')"
+  },
+  {
+    "name": "origin_state_name",
+    "type": "string",
+    "description": "Origin state full name (e.g., 'California', 'Texas')"
+  },
+  {
+    "name": "dest_state",
+    "type": "string",
+    "description": "Destination state abbreviation (e.g., 'CA', 'TX', 'NY')"
+  },
+  {
+    "name": "dest_state_name",
+    "type": "string",
+    "description": "Destination state full name (e.g., 'California', 'Texas')"
+  }
+]
 
-User: "What's the risk for shipping to Miami?"
-You to Analytical Agent: "I've analyzed the Chicago-Miami lane for the user. Can you
-visualize the risk breakdown? Overall score is around 45 (medium risk). Main factors
-are weather (35%) and seasonal congestion. Also show the delivery timeline (2-4 days)."
+When using request_data_analysis, be specific:
+- What data to query
+- What metrics to calculate
+- What visualizations to create
 
-CAPABILITIES:
-- Analyze delivery risk based on lane, time, weather, and carrier factors
-- Provide lane performance insights (on-time rates, delay causes, seasonality)
-- Compare and recommend carriers based on cost, reliability, and capacity
-- Coordinate with the Analytical Agent for visual dashboards
-- Suggest optimizations for delivery windows and routing
-
-RESPONSE STYLE:
-- Keep answers concise and actionable (3-5 sentences typical)
-- Use bullet points for lists and comparisons
-- Highlight key metrics and percentages
-- Do not use emojis
-- When you've asked the Analytical Agent to create visualizations, let the user know
-
-When analyzing deliveries, consider:
-- Origin and destination locations
-- Time of year and seasonal patterns
-- Weather conditions and forecasts
-- Carrier reliability and capacity
-- Historical lane performance
-
-Use your tools to fetch real data before responding. Always base answers on actual data.
-"""
+Keep responses concise. No emojis."""
 
 
-def _extract_analytical_message(messages: list) -> str | None:
-    """
-    Extract message sent to the Analytical Agent.
-
-    Checks if the chat agent sent a message to the analytical agent
-    and extracts the message content.
-
-    Returns the message string if found, None otherwise.
-    """
+def _extract_visualization_request(messages: list) -> str | None:
+    """Extract the visualization request from tool messages."""
     for msg in messages:
-        msg_type = getattr(msg, 'type', None) or (msg.get('type') if isinstance(msg, dict) else None)
-        if msg_type == 'tool':
-            content = msg.content if hasattr(msg, 'content') else msg.get('content', '')
-            if isinstance(content, str) and '"status": "message_to_analytical"' in content:
+        if hasattr(msg, 'type') and msg.type == 'tool':
+            content = msg.content if hasattr(msg, 'content') else ''
+            if isinstance(content, str) and '"status": "routed_to_analytical"' in content:
                 try:
-                    tool_data = json.loads(content)
-                    return tool_data.get("message")
+                    data = json.loads(content)
+                    return data.get("request")
                 except (json.JSONDecodeError, TypeError):
                     pass
     return None
-
-
-def _build_context_message(delivery_context: dict) -> str:
-    """Build the context message with current delivery state."""
-    if not delivery_context:
-        return ""
-
-    context = "CURRENT DELIVERY CONTEXT:\n\n"
-    context += f"""Delivery Scenario:
-- Origin: {delivery_context.get('origin', 'Not specified')}
-- Destination: {delivery_context.get('destination', 'Not specified')}
-- Carrier: {delivery_context.get('carrier', 'Not specified')}
-- Time Window: {delivery_context.get('time_window', 'Not specified')}
-- Priority: {delivery_context.get('priority', 'Standard')}
-"""
-    return context
 
 
 def _convert_messages(messages: Sequence[BaseMessage]) -> list[BaseMessage]:
@@ -166,87 +208,67 @@ async def run_chat(
     delivery_context: Optional[dict] = None,
 ) -> dict:
     """
-    Run the chat assistant to respond to user questions about deliveries.
+    Run the chat assistant with streaming support.
 
-    Args:
-        messages: Previous messages in conversation
-        user_message: Current user message
-        config: Configuration from graph
-        delivery_context: Optional context about current delivery being discussed
+    Normal responses stream as text. Tool calls are only used when
+    the LLM decides to delegate to the Analytical Agent.
 
     Returns:
         Dict with:
         - response: Assistant's response text
-        - visualization_request: Message for analytical agent (if any)
+        - visualization_request: Request for analytical agent (if tool was called)
         - error: Optional error message
     """
     if config is None:
         config = Configuration()
 
-    # Handle missing user message
     if not user_message:
         return {
-            "response": "Hello! I'm DeliveryIQ, your last-mile delivery assistant. Ask me about delivery risks, lane performance, carrier recommendations, or any logistics questions.",
+            "response": "Hello! I'm DeliveryIQ, your last-mile delivery assistant. Ask me about carrier performance, delivery trends, or any logistics questions.",
             "visualization_request": None,
             "error": None,
         }
 
     llm = get_llm(config)
-    system_prompt = build_system_prompt(config)
 
-    # Create the ReAct agent with tools
+    # Create ReAct agent - streams text, only shows tools when actually called
     agent = create_react_agent(
         llm,
         CHAT_TOOLS,
-        prompt=system_prompt,
+        prompt=SYSTEM_PROMPT,
     )
-
-    # Build context message
-    context = _build_context_message(delivery_context or {})
 
     # Build message list
     agent_messages = []
-
-    # Add context on first message
-    if context and not messages:
-        agent_messages.append(HumanMessage(content=context))
-
-    # Add previous messages (last 10)
     if messages:
-        previous = _convert_messages(messages)[-10:]
-        agent_messages.extend(previous)
-
-    # Add current user message
+        agent_messages.extend(_convert_messages(messages)[-10:])
     agent_messages.append(HumanMessage(content=user_message))
 
     try:
         result = await agent.ainvoke({"messages": agent_messages})
 
-        # Extract the final message
-        final_message_content = result["messages"][-1].content if result.get("messages") else ""
-
-        # Handle content being a list (Anthropic format) or string (OpenAI format)
-        if isinstance(final_message_content, list):
-            final_message = " ".join(
+        # Get final response text
+        final_content = result["messages"][-1].content if result.get("messages") else ""
+        if isinstance(final_content, list):
+            response = " ".join(
                 block.get("text", "") if isinstance(block, dict) else str(block)
-                for block in final_message_content
+                for block in final_content
             )
         else:
-            final_message = str(final_message_content)
+            response = str(final_content)
 
-        # Check if the chat agent sent a message to the analytical agent
-        # This is inter-agent communication in the orchestrator workflow
-        visualization_request = _extract_analytical_message(result["messages"])
+        # Check if tool was called for analytical routing
+        visualization_request = _extract_visualization_request(result["messages"])
 
         return {
-            "response": final_message,
+            "response": response,
             "visualization_request": visualization_request,
             "error": None,
         }
 
     except Exception as e:
         return {
-            "response": f"I apologize, I encountered an error: {str(e)}. Could you please rephrase your question?",
+            "response": f"I encountered an error: {str(e)}. Please try again.",
             "visualization_request": None,
             "error": str(e),
         }

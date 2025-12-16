@@ -156,13 +156,18 @@ async function processMessageStream(response, onStreamCallback) {
             if (data.result) {
               onStreamCallback?.({ type: 'result_update', result: data.result });
             }
-            // Node output with chat response (first message case)
+            // Node output with chat response
             const nodeData = data.chat || data.human_input;
-            if (nodeData?.chat_response && !state.messageContent.size) {
-              // First message - display the complete response
-              const msgId = `first-${Date.now()}`;
-              state.messageContent.set(msgId, nodeData.chat_response);
-              onStreamCallback?.({ messageId: msgId, text: nodeData.chat_response, isStreaming: false, type: 'text' });
+            if (nodeData?.chat_response) {
+              // Check if this is a new response (not already displayed)
+              const existingResponses = Array.from(state.messageContent.values());
+              const isNewResponse = !existingResponses.includes(nodeData.chat_response);
+
+              if (isNewResponse) {
+                const msgId = `chat-${Date.now()}`;
+                state.messageContent.set(msgId, nodeData.chat_response);
+                onStreamCallback?.({ messageId: msgId, text: nodeData.chat_response, isStreaming: false, type: 'text' });
+              }
               if (nodeData.result) {
                 onStreamCallback?.({ type: 'result_update', result: nodeData.result });
               }
@@ -179,16 +184,16 @@ async function processMessageStream(response, onStreamCallback) {
               if (!state.reportedTools.has(completedKey)) {
                 state.reportedTools.add(completedKey);
 
+                const finalText = extractText(msg.content);
                 const alreadyStreamed = state.messageContent.has(msgId);
-                const isFinalMessage = msgId.includes('-final') || msgId.includes('chat-');
-                const hasOtherContent = state.messageContent.size > 0;
 
-                if (!alreadyStreamed && !(isFinalMessage && hasOtherContent)) {
-                  const finalText = extractText(msg.content);
-                  if (finalText) {
-                    state.messageContent.set(msgId, finalText);
-                    onStreamCallback?.({ messageId: msgId, text: finalText, isStreaming: false, type: 'text' });
-                  }
+                // Check if this content was already displayed (regardless of msgId)
+                const existingResponses = Array.from(state.messageContent.values());
+                const isNewContent = finalText && !existingResponses.includes(finalText);
+
+                if (!alreadyStreamed && isNewContent) {
+                  state.messageContent.set(msgId, finalText);
+                  onStreamCallback?.({ messageId: msgId, text: finalText, isStreaming: false, type: 'text' });
                 }
 
                 onStreamCallback?.({ messageId: msgId, type: 'complete' });
@@ -266,4 +271,4 @@ export const TOOL_LABELS = {
   'message_analytical_agent': 'Creating visualizations...',
 };
 
-export const getToolLabel = (toolName) => TOOL_LABELS[toolName] || `Using ${toolName}...`;
+export const getToolLabel = (toolName) => TOOL_LABELS[toolName] || `${toolName}...`;

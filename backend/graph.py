@@ -211,7 +211,7 @@ async def chat_node(
         "chat_response": response,
     }
 
-    # Check if we need to route to analytical agent
+    # Check if we need to route to analytical agent (tool was called)
     if visualization_request:
         return Command(
             update={
@@ -346,6 +346,7 @@ def build_delivery_graph() -> StateGraph:
 
     # Entry point
     workflow.add_edge(START, "chat")
+    workflow.add_edge("analytical", "chat")
 
     # Note: Routing is handled by Command.goto in the node functions
 
